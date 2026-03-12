@@ -89,103 +89,43 @@ Gs.Objects.ShowUnAuthMessage = function () {
 }
 
 
-function GenerateMenu() {
+function GenerateMenuList() {
     let htmlContent = "";
 
     let lastGuid = null, menuItem = {}, menu = [];
-    let portalMenu = Metro.storage.getItem('PortalMenu', null);
+    let portalMenu = Metro.storage.getItem('MenuList', null);
 
     portalMenu.forEach((mItem, index, arr) => {
-
-        switch (mItem.apiTableColumnName) {
-            case "ParentGuid":
-                menuItem.ParentGuid = mItem.value;
-                menuItem.RecGuid = mItem.recGuid;
-                menuItem.Id = mItem.id;
-                menuItem.Description = mItem.description;
-                menuItem.Public = mItem.public;
-                menuItem.Active = mItem.active;
-                break;
-            case "Sequence":
-                menuItem.Sequence = parseInt(mItem.value);
-                break;
-            case "Name":
-                menuItem.Name = mItem.value;
-                break;
-            case "Timestamp":
-                menuItem.Timestamp = new Date(mItem.value);
-                break;
-            case "Icon":
-                menuItem.Icon = mItem.value;
-                break;
-            case "InheritedMenuType":
-                menuItem.InheritedMenuType = mItem.value;
-                break;
-            case "HtmlContent":
-                menuItem.HtmlContent = mItem.value;
-                menuItem.HtmlContentId = mItem.id;
-                break;
-            case "JsContent":
-                menuItem.JsContent = mItem.value;
-                menuItem.JsContentId = mItem.id;
-                break;
-            case "CSSContent":
-                menuItem.CssContent = mItem.value;
-                menuItem.CssContentId = mItem.id;
-                break;
-            default:
-        }
-
-        if (lastGuid != null && (arr[index + 1] == undefined || arr[index + 1].recGuid != mItem.recGuid)) {
-            menu.push(menuItem);
-            menuItem = {};
-        }
-
-        lastGuid = mItem.recGuid;
-    });
-    menu.sort((a, b) => a.Sequence > b.Sequence ? 1 : -1);
-    Metro.storage.setItem('Menu', menu);
-
-    menu.forEach((mItem, index, arr) => {
-        if (mItem.InheritedMenuType == "menu") {
-            htmlContent += '<li id="' + mItem.Sequence + '" ' + (Metro.storage.getItem('UserSettingList', null).EnableShowDescription && mItem.Description != null && mItem.Description.length > 0 ? ' class="drop-shadow" data-role="hint" data-hint-text="' + mItem.Description + '"' : "''") + ' ><a href="#" class="dropdown-toggle"><span class="icon"><span class="' + mItem.Icon + '"></span></span><span class="caption">' + mItem.Name + '</span></a>';
-            htmlContent += '<ul id ="' + mItem.RecGuid + '" class="navview-menu stay-open" data-role="dropdown"><li class="item-header" > ' + mItem.Name + '</li></ul>';
+        if (mItem.MenuType == "Menu") {
+            htmlContent += '<li id="' + mItem.Sequence + '" ><a href="#" class="dropdown-toggle"><span class="icon"><span class="' + mItem.Icon + '"></span></span><span class="caption">' + mItem.Name + '</span></a>';
+            htmlContent += '<ul id ="' + mItem.Id + '" class="navview-menu stay-open" data-role="dropdown"><li class="item-header" > ' + mItem.Name + '</li></ul>';
             htmlContent += '</li>';
         }
 
         if (index == arr.length - 1) { document.getElementById("PortalMenu").innerHTML = htmlContent; }
     });
 
-    menu.forEach((mItem, index, arr) => {
-        if (mItem.InheritedMenuType == "link") {
-            htmlContent = '<li onclick=Gs.Behaviors.SetLink(' + mItem.HtmlContentId + ',"' + mItem.HtmlContent + '"); ' + (Metro.storage.getItem('UserSettingList', null).EnableShowDescription && mItem.Description != null && mItem.Description.length > 0 ? ' data-role="hint" data-hint-text="' + mItem.Description + '"' : "''") + ' ><a href= "#' + mItem.Name + '" ><span class="icon"><span class="' + mItem.Icon + '"></span></span><span class="caption">' + mItem.Name + '</span></a></li >';
-            document.getElementById(mItem.ParentGuid).innerHTML = document.getElementById(mItem.ParentGuid).innerHTML + htmlContent;
+    portalMenu.forEach((mItem, index, arr) => {
+        if (mItem.MenuType == "Link") {
+            htmlContent = '<li onclick=Gs.Behaviors.SetLink(' + mItem.Id + ',"' + mItem.HtmlContent + '"); ><a href= "#' + mItem.Name + '" ><span class="icon"><span class="' + mItem.Icon + '"></span></span><span class="caption">' + mItem.Name + '</span></a></li >';
+            document.getElementById(mItem.ParentId).innerHTML = document.getElementById(mItem.ParentId).innerHTML + htmlContent;
 
-        } else if (mItem.InheritedMenuType == "externalLink") {
-            htmlContent = '<li onclick=Gs.Behaviors.SetExternalLink(' + mItem.HtmlContentId + ',"' + mItem.HtmlContent + '"); ' + (Metro.storage.getItem('UserSettingList', null).EnableShowDescription && mItem.Description != null && mItem.Description.length > 0 ? ' data-role="hint" data-hint-text="' + mItem.Description + '"' : "''") + ' ><a href= "#' + mItem.Name + '" ><span class="icon"><span class="' + mItem.Icon + '"></span></span><span class="caption">' + mItem.Name + '</span></a></li >';
-            document.getElementById(mItem.ParentGuid).innerHTML = document.getElementById(mItem.ParentGuid).innerHTML + htmlContent;
+        } else if (mItem.MenuType == "ExternalLink") {
+            htmlContent = '<li onclick=Gs.Behaviors.SetExternalLink(' + mItem.Id + ',"' + mItem.HtmlContent + '"); ><a href= "#' + mItem.Name + '" ><span class="icon"><span class="' + mItem.Icon + '"></span></span><span class="caption">' + mItem.Name + '</span></a></li >';
+            document.getElementById(mItem.ParentId).innerHTML = document.getElementById(mItem.ParentId).innerHTML + htmlContent;
 
         }
 
-        else if (mItem.InheritedMenuType == "content") {
-            htmlContent = '<li onclick=Gs.Behaviors.SetContent(' + mItem.HtmlContentId + ',' + mItem.JsContentId + ',' + mItem.CssContentId + '); ' + (Metro.storage.getItem('UserSettingList', null).EnableShowDescription && mItem.Description != null && mItem.Description.length > 0 ? ' data-role="hint" data-hint-text="' + mItem.Description + '"' : "''") + ' ><a href= "#' + mItem.Name + '" ><span class="icon"><span class="' + mItem.Icon + '"></span></span><span class="caption">' + mItem.Name + '</span></a></li >';
-            document.getElementById(mItem.ParentGuid).innerHTML = document.getElementById(mItem.ParentGuid).innerHTML + htmlContent;
+        else if (mItem.MenuType == "Content") {
+            htmlContent = '<li onclick=Gs.Behaviors.SetContent(' + mItem.Id + ',' + mItem.Id + ',' + mItem.Id + '); ><a href= "#' + mItem.Name + '" ><span class="icon"><span class="' + mItem.Icon + '"></span></span><span class="caption">' + mItem.Name + '</span></a></li >';
+            document.getElementById(mItem.ParentId).innerHTML = document.getElementById(mItem.ParentId).innerHTML + htmlContent;
         }
 
-        else if (mItem.InheritedMenuType == "externalContent") {
-            htmlContent = '<li onclick=Gs.Behaviors.SetExternalContent(' + mItem.HtmlContentId + ',' + mItem.JsContentId + ',' + mItem.CssContentId + '); ' + (Metro.storage.getItem('UserSettingList', null).EnableShowDescription && mItem.Description != null && mItem.Description.length > 0 ? ' data-role="hint" data-hint-text="' + mItem.Description + '"' : "''") + ' ><a href= "#' + mItem.Name + '" ><span class="icon"><span class="' + mItem.Icon + '"></span></span><span class="caption">' + mItem.Name + '</span></a></li >';
-            document.getElementById(mItem.ParentGuid).innerHTML = document.getElementById(mItem.ParentGuid).innerHTML + htmlContent;
+        else if (mItem.MenuType == "ExternalContent") {
+            htmlContent = '<li onclick=Gs.Behaviors.SetExternalContent(' + mItem.Id + ',' + mItem.Id + ',' + mItem.Id + '); ><a href= "#' + mItem.Name + '" ><span class="icon"><span class="' + mItem.Icon + '"></span></span><span class="caption">' + mItem.Name + '</span></a></li >';
+            document.getElementById(mItem.ParentId).innerHTML = document.getElementById(mItem.ParentId).innerHTML + htmlContent;
         }
-
-
     });
-
-
-    //let windowFunction = Metro.storage.getItem("RunFunction", null);
-    //if (windowFunction != null) {
-    //    window[windowFunction]();
-    //    Metro.storage.delItem("RunFunction", null);
-    //}
 }
 
 
@@ -249,25 +189,6 @@ Gs.Objects.RefreshPreview = function () {
 }
 
 
-//Gs.Objects.InfoboxTableCreate = function (elementId) {
-//    let html = "<div class='container'><table id='MenuTable' class='table striped' data-role='table' data-pagination='true' data-show-all-pages='false' ></div>";
-//    let infoBox = Metro.infobox.create(html, "", {
-//        closeButton: true,
-//        type: "",
-//        removeOnClose: true,
-//        width: "80%",
-//        height: "802",
-//        tag: "",
-//        id: elementId
-//    });
-//    var table = Metro.getPlugin("#PreviewTable", "table");
-//    let data=[];
-//    let functionList = Metro.storage.getItem('FunctionList', null);
-//    functionList.forEach(fn => { data.push([ fn.Group, fn.Label, fn.Path ]); });
-//    table.setItems(data); table.reload();
-//}
-
-
 Gs.Objects.InfoboxFrameCreate = function (elementId,url) {
     let infoBox = Metro.infobox.create("<iframe id='" + elementId + "' src='" + url + "'  width='100%' height='880' frameborder='0' scrolling='yes' style='width: 100%; height: 780px;' ></iframe>", "", {
         closeButton: true,
@@ -315,9 +236,6 @@ Gs.Objects.OpenInExternalWindow = function (title, url, lastWindow = false) {
     if (lastWindow) { (url = document.getElementById("IFrameWindow") != null ? document.getElementById("IFrameWindow").src : "/") }
     window.open(url, title);
 }
-
-
-
 
 
 Gs.Objects.ShowRegistrationPage = function () {

@@ -4,28 +4,15 @@ let pageLoader;
 
 Gs.Behaviors.PortalStartup = async function () {
     if (Metro.storage.getItem("ApiToken", null) != null) { Cookies.set("ApiToken", Metro.storage.getItem("ApiToken", null).Token); }
-    Gs.Objects.CreateToolPanel();
 
-    Gs.Variables.getSpProcedure[1].tableName = "SolutionMixedEnumList";
-    await Gs.Apis.RunServerPostApi("DatabaseService/SpProcedure/GetGenericDataListByParams", Gs.Variables.getSpProcedure, "MixedEnumList");
+    await Gs.Apis.RunServerGetApi("MenuList/GetMenuList", "MenuList","GenerateMenuList");
 
-    Gs.Variables.getSpProcedure[1].tableName = "SolutionMonacoSuggestionList";
-    Gs.Variables.getSpProcedure[2].camelCase = true;
-    await Gs.Apis.RunServerPostApi("DatabaseService/SpProcedure/GetGenericDataListByParams", Gs.Variables.getSpProcedure, "MonacoSuggestionList");
-    Gs.Variables.getSpProcedure[2].camelCase = false;
-
-    await Gs.Apis.RunServerGetApi("PortalApiTableService/GetApiTableDataList/PortalMenu", "PortalMenu");
-    await Gs.Apis.RunServerGetApi("InformationService/GetVersion", "ServerVersion");
-
-    $(document).ready(function () {
-        setTimeout(function () {
-            GenerateMenu();
-            Gs.Functions.GetFunctionList();
+    //$(document).ready(function () {
+    //    setTimeout(function () {
+    //        GenerateMenuList();
             
-            if (!Gs.Apis.IsLogged()) { Gs.Behaviors.LoadUserSettings();
-            } else { Gs.Apis.GetUserSetting(); }
-        }, 5000);
-    }); 
+    //    }, 5000);
+    //}); 
     
 }
 
@@ -120,54 +107,11 @@ Gs.Behaviors.DisableScroll = function () {
 }
 
 
-Gs.Behaviors.SetUserSettings = async function () {
-    let userSetting = JSON.parse(JSON.stringify(Metro.storage.getItem('UserSettingList', null)))
-    userSetting.EnableAutoTranslate = $("#EnableAutoTranslate")[0].checked;
-    userSetting.EnableShowDescription = $("#EnableShowDescription")[0].checked;
-    userSetting.RememberLastHandleBar = $("#RememberLastHandleBar")[0].checked;
-    userSetting.RememberLastJson = $("#RememberLastJson")[0].checked;
-    userSetting.EnableScreenSaver = $("#EnableScreenSaver")[0].checked;
-
-    Metro.storage.setItem('UserSettingList', userSetting);Gs.Variables.UserSettingList = userSetting;
-
-    //reset UserSetting Data
-    if (!Metro.storage.getItem('UserSettingList', null).RememberLastHandleBar) { Metro.storage.delItem("HandlebarCode"); }
-    if (!Metro.storage.getItem('UserSettingList', null).RememberLastJson) { Metro.storage.delItem("JsonGeneratorService"); }
-
-    //Save UserSettingList
-    if (Gs.Apis.IsLogged()) {
-        await Gs.Apis.RunServerPostApi("PortalApiTableService/SetUserSettingList", Metro.storage.getItem("UserSettingList", null), null);
-    }
-
-    if ($("#EnableAutoTranslate").val('checked')[0].checked) { Gs.Behaviors.GoogleTranslateElementInit(); } else { Gs.Behaviors.CancelTranslation(false); }
-    if ($("#EnableScreenSaver").val('checked')[0].checked && document.getElementById("ScreenSaver") == null) {
-        Gs.Variables.screensaver = new Screensaver({
-            secondsInactive: 60,
-            speed: 1.5,
-            logo: "/server-portal/images/logo.png",
-            disabledWhenUsingIframes: false,
-        });
-    } else if (!$("#EnableScreenSaver").val('checked')[0].checked) { Gs.Variables.screensaver = {}; Gs.Functions.RemoveElement("ScreenSaver"); }
-}
-
-
-Gs.Behaviors.LoadUserSettings = function () {
-    Gs.Behaviors.ElementSetCheckBox("EnableAutoTranslate", Gs.Variables.UserSettingList.EnableAutoTranslate);
-    Gs.Behaviors.ElementSetCheckBox("EnableShowDescription", Gs.Variables.UserSettingList.EnableShowDescription);
-    Gs.Behaviors.ElementSetCheckBox("RememberLastHandleBar", Gs.Variables.UserSettingList.RememberLastHandleBar);
-    Gs.Behaviors.ElementSetCheckBox("RememberLastJson", Gs.Variables.UserSettingList.RememberLastJson);
-    Gs.Behaviors.ElementSetCheckBox("EnableScreenSaver", Gs.Variables.UserSettingList.EnableScreenSaver);
-
-    //Apply Changes
-    Gs.Behaviors.SetUserSettings();
-}
-
-
 Gs.Behaviors.BeforeSetMenu = function (htmlContentId) {
     Gs.Variables.monacoEditorList = [];
 
     //SET UserSetting
-    Gs.Behaviors.LoadUserSettings();
+    //Gs.Behaviors.LoadUserSettings();
 
     //RESET here storage tables from Portal Menu
     Metro.storage.delItem("SelectedMenuId");
@@ -190,17 +134,12 @@ Gs.Behaviors.BeforeSetMenu = function (htmlContentId) {
     
 
     Metro.storage.delItem("SelectedEditor");
-    Metro.storage.delItem("OpenExcelFile");
-    Metro.storage.delItem("OpenWordFile");
-    Metro.storage.delItem("OpenPowerPointFile");
-    Metro.storage.delItem("RevealPreview");
-    Metro.storage.delItem("RevealPreviewData");
     //Metro.storage.delItem("RunFunction");
 
     Gs.Functions.RemoveElement("InheritScript"); Gs.Functions.RemoveElement("InheritStyle");
-    let menu = JSON.parse(JSON.stringify(Metro.storage.getItem('Menu', null)));
-    Metro.storage.setItem('SelectedMenu', menu.filter(obj => { return obj.HtmlContentId == htmlContentId })[0]);
-    Metro.storage.setItem('SelectedMenuId', menu.filter(obj => { return obj.HtmlContentId == htmlContentId })[0].Id);
+    let menu = JSON.parse(JSON.stringify(Metro.storage.getItem('MenuList', null)));
+    Metro.storage.setItem('SelectedMenu', menu.filter(obj => { return obj.Id == htmlContentId })[0]);
+    Metro.storage.setItem('SelectedMenuId', menu.filter(obj => { return obj.Id == htmlContentId })[0].Id);
     return menu;
 }
 
@@ -217,7 +156,7 @@ Gs.Behaviors.SetExternalLink = function (htmlContentId, content) {
     let menu = Gs.Behaviors.BeforeSetMenu(htmlContentId);
 
     document.getElementById("FrameWindow").innerHTML = 
-    '<div id=MainWindow data-role="window" data-custom-buttons="WindowButtons" data-icon="<span class=\'' + menu.filter(obj => { return obj.HtmlContentId == htmlContentId })[0].Icon + '\'></spam>" data-title="' + menu.filter(obj => { return obj.HtmlContentId == htmlContentId })[0].Name + '" class="h-100" data-btn-close="false" data-btn-min="false" data-btn-max="false" data-width="100%" data-height="800" data-draggable="false" >'
+    '<div id=MainWindow data-role="window" data-custom-buttons="WindowButtons" data-icon="<span class=\'' + menu.filter(obj => { return obj.Id == htmlContentId })[0].Icon + '\'></spam>" data-title="' + menu.filter(obj => { return obj.Id == htmlContentId })[0].Name + '" class="h-100" data-btn-close="false" data-btn-min="false" data-btn-max="false" data-width="100%" data-height="800" data-draggable="false" >'
     + '<iframe id="IFrameWindow" src="' + content + '" width="100%" height="700" frameborder="0" scrolling="yes" style="width:100%; height:100%;"></iframe></div>';
 }
 
@@ -226,16 +165,16 @@ Gs.Behaviors.SetContent = function (htmlContentId, jsContentId, cssContentId) {
     let menu = Gs.Behaviors.BeforeSetMenu(htmlContentId);
 
     document.getElementById("FrameWindow").innerHTML =
-         '<div id=MainWindow data-role="window" data-custom-buttons="WindowButtons" data-icon="<span class=\'' + menu.filter(obj => { return obj.HtmlContentId == htmlContentId })[0].Icon + '\'></spam>" data-title="' + menu.filter(obj => { return obj.HtmlContentId == htmlContentId })[0].Name + '" data-btn-close="false" class="h-100" data-btn-min="false" data-btn-max="false" data-width="100%" data-height="800" data-draggable="false" >'
-         + menu.filter(menuItem => { return menuItem.HtmlContentId == htmlContentId })[0].HtmlContent + "</div>";
+         '<div id=MainWindow data-role="window" data-custom-buttons="WindowButtons" data-icon="<span class=\'' + menu.filter(obj => { return obj.Id == htmlContentId })[0].Icon + '\'></spam>" data-title="' + menu.filter(obj => { return obj.Id == htmlContentId })[0].Name + '" data-btn-close="false" class="h-100" data-btn-min="false" data-btn-max="false" data-width="100%" data-height="800" data-draggable="false" >'
+         + menu.filter(menuItem => { return menuItem.Id == htmlContentId })[0].HtmlContent + "</div>";
 
-    if (menu.filter(menuItem => { return menuItem.JsContentId == jsContentId })[0].JsContent != null) {
-        let script = "<script id='InheritScript' charset='utf-8' type='text/javascript'> " + menu.filter(menuItem => { return menuItem.JsContentId == jsContentId })[0].JsContent + " </script>";
+    if (menu.filter(menuItem => { return menuItem.Id == jsContentId })[0].JsContent != null) {
+        let script = "<script id='InheritScript' charset='utf-8' type='text/javascript'> " + menu.filter(menuItem => { return menuItem.Id == jsContentId })[0].JsContent + " </script>";
         $('body').append(script);
     }
-    if (menu.filter(menuItem => { return menuItem.CssContentId == cssContentId })[0].CssContent != null) {
+    if (menu.filter(menuItem => { return menuItem.Id == cssContentId })[0].CssContent != null) {
         let style = document.createElement('style'); style.id = "InheritStyle"; style.rel = 'stylesheet';
-        style.innerText = menu.filter(menuItem => { return menuItem.CssContentId == cssContentId })[0].CssContent;
+        style.innerText = menu.filter(menuItem => { return menuItem.Id == cssContentId })[0].CssContent;
         document.head.appendChild(style);
     }
     
@@ -246,15 +185,15 @@ Gs.Behaviors.SetExternalContent = function (htmlContentId, jsContentId, cssConte
     let menu = Gs.Behaviors.BeforeSetMenu(htmlContentId);
 
     document.getElementById("FrameWindow").innerHTML =
-    '<iframe id="IFrameWindow" src="' + menu.filter(menuItem => { return menuItem.HtmlContentId == htmlContentId })[0].HtmlContent + '" width="100%" height="600" frameborder="0" scrolling="yes" style="width:100%; height:100%;"></iframe>';
+    '<iframe id="IFrameWindow" src="' + menu.filter(menuItem => { return menuItem.Id == htmlContentId })[0].HtmlContent + '" width="100%" height="600" frameborder="0" scrolling="yes" style="width:100%; height:100%;"></iframe>';
 
-    if (menu.filter(menuItem => { return menuItem.JsContentId == jsContentId })[0].JsContent != null) {
-        let script = "<script id='InheritScript' charset='utf-8' type='text/javascript'> " + menu.filter(menuItem => { return menuItem.JsContentId == jsContentId })[0].JsContent + " </script>";
+    if (menu.filter(menuItem => { return menuItem.Id == jsContentId })[0].JsContent != null) {
+        let script = "<script id='InheritScript' charset='utf-8' type='text/javascript'> " + menu.filter(menuItem => { return menuItem.Id == jsContentId })[0].JsContent + " </script>";
         $("#IFrameWindow").contents().find("body").append(script);
     }
-    if (menu.filter(menuItem => { return menuItem.CssContentId == cssContentId })[0].CssContent != null) {
+    if (menu.filter(menuItem => { return menuItem.Id == cssContentId })[0].CssContent != null) {
         let style = document.createElement('style'); style.id = "InheritStyle"; style.rel = 'stylesheet';
-        style.innerText = menu.filter(menuItem => { return menuItem.CssContentId == cssContentId })[0].CssContent;
+        style.innerText = menu.filter(menuItem => { return menuItem.Id == cssContentId })[0].CssContent;
         let iframeHead = document.getElementById('IFrameWindow').contentWindow.document.head;
         iframeHead.appendChild(style);
     }

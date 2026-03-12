@@ -86,7 +86,12 @@ public partial class Program
         {
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
         });
-  
+
+        app.Use(async (HttpContext context, Func<Task> next) => {
+            context = GlobalFunctions.IncludeCookieTokenToRequest(context); //Include TOKEN
+            await next();
+        });
+
         app.Run();
     }
 }

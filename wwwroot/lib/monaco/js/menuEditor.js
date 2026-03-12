@@ -1,4 +1,4 @@
-﻿require.config({ paths: { 'vs': '/server-portal/addons/monaco/js/monaco-editor/min/vs' } });
+﻿require.config({ paths: { 'vs': '/lib/monaco/js/monaco-editor/min/vs' } });
 require(['vs/editor/editor.main'], function () {
 
     let fileCounter = 0;
@@ -93,30 +93,5 @@ require(['vs/editor/editor.main'], function () {
     */
 
 
-    let mixedenumList = Metro.storage.getItem("MixedEnumList", null);
-
-    let selectElement = document.querySelector('.language');
-    if (selectElement.options.length == 0) {
-        mixedenumList.forEach(mixedEnum => {
-            if (mixedEnum.ItemsGroup == "MonacoLanguageType") {
-                var opt = document.createElement('option');
-                opt.value = mixedEnum.Name;
-                opt.innerHTML = mixedEnum.Name;
-                selectElement.appendChild(opt);
-            }
-        });
-
-        mixedenumList.forEach(mixedEnum => {
-            if (mixedEnum.ItemsGroup == "MonacoLanguageType" && mixedEnum.Active && Metro.storage.getItem('MonacoSuggestionList', null).filter(obj => { if (obj.inheritedMonacoLanguageType == mixedEnum.Name) { return obj; } }).length > 0) {
-                monaco.languages.registerCompletionItemProvider(mixedEnum.Name, {
-                    provideCompletionItems: function (model, position) {
-                        const suggestions = Metro.storage.getItem('MonacoSuggestionList', null).filter(obj => { if (obj.inheritedMonacoLanguageType == mixedEnum.Name) { return obj; } });
-                        return { suggestions: suggestions };
-                    }
-                });
-                monaco.languages.register({ id: mixedEnum.Name });
-            }
-        });
-    }
     
 });

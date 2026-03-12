@@ -48,4 +48,15 @@
         public string Role { get; set; }
         public string Username { get; set; }
     }
+
+
+    public class ServerWebPagesToken
+    {
+        public Dictionary<string, string> Data { get; set; }
+        public ClaimsPrincipal? UserClaims { get; set; } = null;
+        public SecurityToken? Token { get; set; } = null;
+        public string? stringToken { get; set; } = null;
+        public bool IsValid { get; set; } = false;
+        public string userRole { get; set; } = null;
+    }
 }

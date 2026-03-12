@@ -7,11 +7,12 @@ namespace Recon.DBModel;
 public partial class ScaffoldContext : DbContext
 {
     public ScaffoldContext() { }
-
     public ScaffoldContext(DbContextOptions<ScaffoldContext> options)
         : base(options)
     {
     }
+
+    public virtual DbSet<MenuList> MenuLists { get; set; }
 
     public virtual DbSet<UserList> UserLists { get; set; }
 
@@ -24,6 +25,11 @@ public partial class ScaffoldContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("Czech_CS_AS");
+
+        modelBuilder.Entity<MenuList>(entity =>
+        {
+            entity.Property(e => e.TimeStamp).HasDefaultValueSql("(getdate())", "DF_MenuList_TimeStamp");
+        });
 
         modelBuilder.Entity<UserList>(entity =>
         {
