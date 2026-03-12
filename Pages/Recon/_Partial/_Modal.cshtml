@@ -1,0 +1,73 @@
+﻿@* @addTagHelper *, WebOptimizer.Core *@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@using System.Collections
+@using System.Collections.Generic
+@using System.IO
+@using System.Linq
+@using System.Security.Claims
+@using System.Text.RegularExpressions
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.Mvc.RazorPages
+
+@namespace ServerCorePages
+
+@{
+    string path = this.Context.Request.Path.ToString().ToLower();
+    string? role = this.Context.User.Claims.Where(a => a.Type == ClaimTypes.Role).FirstOrDefault()?.Value;
+    string? name = this.Context.User.Claims.Where(a => a.Type == ClaimTypes.NameIdentifier).FirstOrDefault()?.Value;
+}
+
+
+    <div id="charmPanel" data-role="charms" style="width:350px !important;height:calc(100% - 45px) !important;" data-position="right" data-opacity=".5">
+        <textarea id="NewMessage" data-role="textarea" data-auto-size="true" data-max-height="150" class="primary" placeholder="Zanechte mi Zprávu...."></textarea>
+        <button id="SendMessageBtn" class="button success mb-4" onclick="SendMessage()">Save Message</button>
+        <div id="MessageBox" class="d-block m-0 p-0" style="overflow-y: scroll;max-height: 500px;"></div>
+    </div>
+
+
+    @* Menu Editor *@
+    <div id="monacoWeb" class="info-box" data-role="infobox" data-width='80%' data-height='800px' >
+        <span class="button square closer"></span>
+        <div class="info-box-content" style='overflow: auto;height: 750px;'>
+
+            <ul data-role="materialtabs" data-expand="sm">
+                <li><a href="#_menuHtml">HTML</a></li>
+                <li><a href="#_menuJs">Javascript</a></li>
+                <li><a href="#_menuCss">CSS</a></li>
+                <li><a href="#_menuPreview">Preview</a></li>
+                <li><a href="#_menuMdHelp">Help</a></li>
+            </ul>
+
+            <div class="border bd-default no-border-top p-2">
+                <div id="_menuHtml">
+                    <div id="monacoHTML" style='top: -50px;'></div>
+                </div>
+                <div id="_menuJs">
+                    <div id="monacoJS" style='top: -50px;'></div>
+                </div>
+                <div id="_menuCss">
+                    <div id="monacoCSS" style='top: -50px;'></div>
+                </div>
+                 <div id="_menuPreview">
+                    <div id="menuPreview" style="overflow:auto;width:100%; height:700px;"></div>
+                    <button class="button success" style="position: absolute;top: -50px;left: 50%;z-index: 2000;" onclick=Gs.Objects.RefreshPreview(); >Refresh</button>
+                </div>
+            </div>
+
+            <select class="language" style='position: absolute;left: 90%;z-index: 2000;top: 75px;right: 0px;'></select>
+
+           <select class="theme" style='position: absolute;left: 90%;z-index: 2000;top: 105px;right: 50px;'>
+               <option>vs-dark</option>
+                <option>vs</option>
+			    <option>hc-black</option>
+            </select>
+        </div>
+    </div>
+
+
+
+

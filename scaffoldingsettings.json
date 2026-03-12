@@ -1,0 +1,23 @@
+﻿{
+  "DataSource": "Server=127.0.0.1\\SQLEXPRESS;Database=RECON;User ID=easyitcenter;Password=easyitcenter;TrustServerCertificate=True;command timeout=300;",
+  "Provider": "Microsoft.EntityFrameworkCore.SqlServer",
+  "ContextName": "ScaffoldContext",
+  "ContextDirectory": "DATABASE/DBEngine",
+  "OutputDirectory": "DATABASE/DBModel",
+  "ContextNamespace": "Recon.DBModel",
+  "Namespace": "Recon.DBModel",
+  "Schemas": null,
+  "Tables": null,
+  "ProjectDirectory": "",
+  "StartupProjectDirectory": "",
+  "TargetFramework": "",
+  "Configuration": "",
+  "TargetRuntime": null,
+  "DataAnnotations": true,
+  "UseDatabaseNames": false,
+  "NoOnConfiguring": true,
+  "NoPluralize": false,
+  "Force": true,
+  "NoBuild": true,
+  "Verbose": true
+}

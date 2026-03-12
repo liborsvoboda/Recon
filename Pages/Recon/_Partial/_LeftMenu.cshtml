@@ -1,0 +1,36 @@
+﻿@* @addTagHelper *, WebOptimizer.Core *@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@using System.Collections
+@using System.Collections.Generic
+@using System.IO
+@using System.Linq
+@using System.Security.Claims
+@using System.Text.RegularExpressions
+@using System.Threading.Tasks
+@using EasyITCenter
+@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.Mvc.RazorPages
+
+@namespace ServerCorePages
+
+@{
+    string path = this.Context.Request.Path.ToString().ToLower();
+    string? role = this.Context.User.Claims.Where(a => a.Type == ClaimTypes.Role).FirstOrDefault()?.Value;
+    string? name = this.Context.User.Claims.Where(a => a.Type == ClaimTypes.NameIdentifier).FirstOrDefault()?.Value;
+    string? userPrefix = this.Context.User.Claims.Where(a => a.Type == ClaimTypes.Sid).FirstOrDefault()?.Value;
+}
+
+
+<ul class="navview-menu mt-4" id="PortalMenu">
+    
+    <li class="item-header">Portal Template</li>
+    <li>
+        <a href="/server-integrated/razor-pages/pandoratemplate" target="_blank">
+            <span class="icon"><span class="mif-brightness-auto fg-red"></span></span>
+            <span class="caption">Pandora Template</span>
+        </a>
+    </li> 
+</ul>

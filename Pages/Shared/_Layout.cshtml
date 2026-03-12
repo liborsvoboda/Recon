@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - WebApplication1</title>
+
+    <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="/lib/summernote/css/summernote.min.css" />
+    <link rel="stylesheet" href="/css/metro-all.css" />
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/WebApplication1.styles.css" />
+
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+
+    <script type="text/javascript" src="/lib/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/lib/summernote/js/summernote.min.js"></script>
+    <script type="text/javascript" src="/lib/summernote/lang/summernote-cs-CZ.min.js"></script>
+
+    <script type="text/javascript" src="/js/metro.4.5.2.min.js"></script>
+
+    <script type="text/javascript" src="/lib/manage/js/global-storage.js"></script>
+    <script type="text/javascript" src="/lib/manage/js/global-behavior.js"></script>
+    <script type="text/javascript" src="/lib/manage/js/global-object.js"></script>
+    <script type="text/javascript" src="/lib/manage/js/global-functions.js"></script>
+    <script type="text/javascript" src="/lib/manage/js/global-api.js"></script>
+    <script type="text/javascript" src="/lib/manage/js/global-media.js"></script>
+
+    <script type="text/javascript" src="/lib/manage/js/js.cookie.min.js"></script>
+
+    <script type="text/javascript" src="/lib/monaco/js/monaco-editor/min/vs/loader.js"></script>
+</head>
+<body class="m4-cloak h-vh-100">
+    <div data-role="navview" data-toggle="#paneToggle" data-expand="xl" data-compact="lg" data-active-state="true">
+        <div class="navview-pane">
+            <div class="bg-cyan d-flex flex-align-center">
+                <button class="pull-button m-0 bg-darkCyan-hover">
+                    <span class="mif-menu fg-white"></span>
+                </button>
+                <h2 class="c-pointer text-light m-0 fg-white pl-1" style="line-height: 52px" data-role="hint" data-cls-hint="bg-github fg-white drop-shadow" data-hint-position="right" data-hint-text="Recon">Recon</h2>
+            </div>
+
+
+            <div class="suggest-box">
+                <input type="text" data-role="input" data-clear-button="false" data-search-button="true">
+                <button class="holder">
+                    <span class="mif-search fg-white"></span>
+                </button>
+            </div>
+
+
+            @await Html.PartialAsync("~/Pages/Recon/_Partial/_LeftMenu.cshtml")
+            <div class="w-100 text-center text-small data-box p-2 border-top bd-grayMouse" style="position: absolute; bottom: 0;min-height:30px !important;height:30px !important">
+            </div>
+        </div>
+        <div class="navview-content h-100">
+            @await Html.PartialAsync("~/Pages/Recon/_Partial/_HeaderMenu.cshtml")
+            @RenderBody()
+        </div>
+    </div>
+    @await Html.PartialAsync("~/Pages/Recon/_Partial/_Modal.cshtml")
+
+</body>
+</html>

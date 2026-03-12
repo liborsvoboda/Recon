@@ -1,0 +1,111 @@
+﻿@* @addTagHelper *, WebOptimizer.Core *@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@using System.Collections
+@using System.Collections.Generic
+@using System.IO
+@using System.Linq
+@using System.Security.Claims
+@using System.Text.RegularExpressions
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.Mvc.RazorPages
+
+@namespace ServerCorePages
+
+@{
+    string path = this.Context.Request.Path.ToString().ToLower();
+    string? role = this.Context.User.Claims.Where(a => a.Type == ClaimTypes.Role).FirstOrDefault()?.Value;
+    string? userName = this.Context.User.Claims.Where(a => a.Type == ClaimTypes.NameIdentifier).FirstOrDefault()?.Value;
+    string? userPrefix = this.Context.User.Claims.Where(a => a.Type == ClaimTypes.Sid).FirstOrDefault()?.Value;
+}
+
+
+<div data-role="appbar" class="pos-absolute bg-darkCyan fg-white">
+
+    <a href="#" class="app-bar-item d-block d-none-lg" id="paneToggle"><span class="mif-menu"></span></a>
+
+@*     <div class="app-bar-container ml-left">
+        <a href="#" class="app-bar-item shadowed" title="Help Center" onclick="Gs.Objects.WindowIframeCreate('Virtual Assistant','/server-portal/addons/assistent/assistent.html');" >
+            <span class="mif-info"></span>
+            <span class="ml-2 app-bar-name">Any Question?</span>
+        </a>
+        <a href="#" class="app-bar-item shadowed" title="Portal Tools" onclick=Gs.Objects.ShowToolPanel(); >
+            <span class="mif-language"></span>
+            <span class="ml-2 app-bar-name">Info Settings</span>
+        </a>
+        <a href="#" class="app-bar-item shadowed" title="Favorites" onclick=Gs.Objects.ShowFavorites("Favorites",false); >
+            <span class="mif-favorite"></span>
+            <span class="ml-2 app-bar-name">Favorites</span>
+        </a>
+
+        <a href="#" class="app-bar-item shadowed" title="Rezervace Online" onclick=window.open("https://calendar.app.google/7GtS8wkYG9HoUVAB7");>
+            <span class="mif-contacts-dialer"></span>
+            <span class="ml-2 app-bar-name">Reservation Online</span>
+        </a>
+    </div> *@
+
+
+    <div class="app-bar-container ml-auto" >
+      @*   <a href="#" class="app-bar-item" title="Rezervace Online" onclick=window.open("https://calendar.app.google/7GtS8wkYG9HoUVAB7");>
+            <span class="mif-contacts-dialer"></span>
+            <span class="ml-2 app-bar-name">Reservation Online</span>
+        </a> *@
+    </div>
+
+
+
+    <div class="app-bar-container ml-auto">
+
+@*         <a href="#" class="app-bar-item">
+            <span class="mif-envelop"></span>
+            <span class="badge bg-green fg-white mt-2 mr-1">4</span>
+        </a>
+        <a href="#" class="app-bar-item">
+            <span class="mif-bell"></span>
+            <span class="badge bg-orange fg-white mt-2 mr-1">10</span>
+        </a>
+        <a href="#" class="app-bar-item">
+            <span class="mif-flag"></span>
+            <span class="badge bg-red fg-white mt-2 mr-1">9</span>
+        </a> *@
+
+
+        <div class="app-bar-container">
+            <a href="#" class="app-bar-item shadowed">
+                <img src="/server-portal/images/logo.png" class="avatar">
+                @{ if(@userName != null) { <span class="ml-2 app-bar-name">@userName</span>}
+                else { <span class="ml-2 app-bar-name">Login</span>}}
+            </a>
+            <div class="user-block shadow-1" data-role="collapse" data-collapsed="true">
+                <div class="bg-darkCyan fg-white p-2 text-middle">
+                    <img src="/server-portal/images/logo.png" class="avatar">
+                    <div class="h4 mb-0">Logged: @userName</div>
+                </div>
+                <div class="bg-white d-flex flex-justify-between flex-equal-items p-2">
+                    <button class="button flat-button">News</button>
+                    <button class="button flat-button">Notes</button>
+                    <button class="button flat-button">Friends</button>
+                </div>
+                <div class="bg-white d-flex flex-justify-between flex-equal-items p-2 bg-light">
+                @{ if(@userName != null) {
+                    <button class="button mr-1">Profile</button>
+                    <button class="button ml-1" onclick=Gs.Apis.SignOut(); >Sign out</button>
+                } else {
+                    <button class="button mr-1" onclick=Gs.Objects.ShowLoginPage(); >Login</button>
+                    <button class="button ml-1" onclick=Gs.Objects.ShowRegistrationPage(); >Registration</button>
+                }}
+                </div>
+            </div>
+        </div>
+
+        @*
+        <a href="#" class="app-bar-item drop-shadow">
+            <span class="mif-cogs" onclick=Gs.Objects.ShowMessagePanel(false) ></span>
+        </a>
+        *@
+
+    </div>
+</div>
