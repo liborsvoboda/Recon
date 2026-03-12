@@ -8,7 +8,7 @@ public partial class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddRazorPages();
+        builder.Services.AddEndpointsApiExplorer().AddRazorPages();
         builder.Services.AddWindowsService(cfg => { cfg.ServiceName = "Recon"; });
         builder.Services.AddSwaggerGen(cfg => {
             cfg.AddSecurityDefinition("Basic", new OpenApiSecurityScheme { Name = "Authorization", Type = SecuritySchemeType.Http, Scheme = "basic", In = ParameterLocation.Header, Description = "Basic Authorization header for getting Bearer Token." });
@@ -52,7 +52,7 @@ public partial class Program
             x.BackchannelHttpHandler = new HttpClientHandler { ServerCertificateCustomValidationCallback = delegate { return true; } };
             x.RequireHttpsMetadata = false;
             x.SaveToken = true;
-            //x.TokenValidationParameters = CoreOperations.ValidAndGetTokenParameters();
+            x.TokenValidationParameters = GlobalFunctions.ValidAndGetTokenParameters();
             //if (bool.Parse(DbOperations.GetServerParameterLists("ConfigTimeTokenValidationEnabled").Value)) { x.TokenValidationParameters.LifetimeValidator = AuthenticationService.TokenLifetimeValidator; }
             x.Events = new JwtBearerEvents {
                 OnAuthenticationFailed = context => {

@@ -47,8 +47,8 @@ public partial class UserList
     public virtual UserRoleList RoleNameNavigation { get; set; } = null!;
 
     [InverseProperty("User")]
-    public virtual ICollection<VariableList> VariableLists { get; set; } = new List<VariableList>();
+    public virtual ICollection<Table1> Table1s { get; set; } = new List<Table1>();
 
     [InverseProperty("User")]
-    public virtual ICollection<VariableTypeList> VariableTypeLists { get; set; } = new List<VariableTypeList>();
+    public virtual ICollection<VariableList> VariableLists { get; set; } = new List<VariableList>();
 }

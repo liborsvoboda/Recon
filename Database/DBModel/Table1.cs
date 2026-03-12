@@ -6,14 +6,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Recon.DBModel;
 
-[Table("VariableTypeList")]
-[Index("Name", Name = "IX_VariableTypeList", IsUnique = true)]
-public partial class VariableTypeList
+[Table("Table_1")]
+[Index("Name", Name = "IX_Table_1", IsUnique = true)]
+public partial class Table1
 {
     [Key]
     public int Id { get; set; }
 
-    [StringLength(50)]
+    [StringLength(100)]
     [Unicode(false)]
     public string Name { get; set; } = null!;
 
@@ -24,6 +24,7 @@ public partial class VariableTypeList
 
     public DateTime TimeStamp { get; set; }
 
-    [InverseProperty("InheritedTypeNavigation")]
-    public virtual ICollection<VariableList> VariableLists { get; set; } = new List<VariableList>();
+    [ForeignKey("UserId")]
+    [InverseProperty("Table1s")]
+    public virtual UserList User { get; set; } = null!;
 }
