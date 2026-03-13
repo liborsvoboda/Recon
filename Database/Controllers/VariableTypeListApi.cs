@@ -78,7 +78,7 @@ namespace EasyITCenter.Controllers {
                 if (HtttpContextExtension.IsAdmin()) {
                     if (!int.TryParse(id, out int Ids)) return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = "Id is not set" });
 
-                    VariableTypeList record = new() { Id = int.Parse(id) };
+                    VariableTypeList record = new ReconContext().VariableTypeLists.Where(a => a.Id == int.Parse(id)).First();
 
                     var data = new ReconContext().VariableTypeLists.Remove(record);
                     int result = await data.Context.SaveChangesAsync();
