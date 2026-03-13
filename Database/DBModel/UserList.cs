@@ -48,7 +48,4 @@ public partial class UserList
 
     [InverseProperty("User")]
     public virtual ICollection<Table1> Table1s { get; set; } = new List<Table1>();
-
-    [InverseProperty("User")]
-    public virtual ICollection<VariableList> VariableLists { get; set; } = new List<VariableList>();
 }

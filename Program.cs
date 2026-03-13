@@ -1,8 +1,4 @@
 using Microsoft.OpenApi;
-using Recon.Controllers;
-using Scalar.AspNetCore;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using Swashbuckle.Swagger;
 
 public partial class Program
 {

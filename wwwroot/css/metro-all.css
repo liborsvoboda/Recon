@@ -36062,6 +36062,7 @@ html.metro-touch-device .streamer .stream.focused .stream-icon {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-align: left !important;
 }
 .table .checkbox,
 .table .radio,

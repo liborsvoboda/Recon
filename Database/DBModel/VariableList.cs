@@ -15,7 +15,7 @@ public partial class VariableList
 
     [StringLength(50)]
     [Unicode(false)]
-    public string InheritedType { get; set; } = null!;
+    public string VariableType { get; set; } = null!;
 
     [StringLength(50)]
     [Unicode(false)]
@@ -27,12 +27,4 @@ public partial class VariableList
     public int UserId { get; set; }
 
     public DateTime TimeStamp { get; set; }
-
-    [ForeignKey("InheritedType")]
-    [InverseProperty("VariableLists")]
-    public virtual VariableTypeList InheritedTypeNavigation { get; set; } = null!;
-
-    [ForeignKey("UserId")]
-    [InverseProperty("VariableLists")]
-    public virtual UserList User { get; set; } = null!;
 }

@@ -6,16 +6,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Recon.DBModel;
 
-[Table("VariableTypeList")]
-[Index("Name", Name = "IX_VariableTypeList", IsUnique = true)]
-public partial class VariableTypeList
+[Table("MachineList")]
+public partial class MachineList
 {
     [Key]
     public int Id { get; set; }
 
-    [StringLength(50)]
+    [StringLength(100)]
     [Unicode(false)]
-    public string Name { get; set; } = null!;
+    public string MachineName { get; set; } = null!;
+
+    [StringLength(100)]
+    [Unicode(false)]
+    public string Connection { get; set; } = null!;
+
+    [Unicode(false)]
+    public string? Image { get; set; }
+
+    public int CycleReadInterval { get; set; }
 
     [Unicode(false)]
     public string? Description { get; set; }

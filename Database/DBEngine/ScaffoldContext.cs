@@ -12,6 +12,8 @@ public partial class ScaffoldContext : DbContext
     {
     }
 
+    public virtual DbSet<MachineList> MachineLists { get; set; }
+
     public virtual DbSet<MenuList> MenuLists { get; set; }
 
     public virtual DbSet<Table1> Table1s { get; set; }
@@ -27,6 +29,11 @@ public partial class ScaffoldContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("Czech_CS_AS");
+
+        modelBuilder.Entity<MachineList>(entity =>
+        {
+            entity.Property(e => e.TimeStamp).HasDefaultValueSql("(getdate())", "DF_MachineList_TimeStamp");
+        });
 
         modelBuilder.Entity<MenuList>(entity =>
         {
@@ -61,16 +68,6 @@ public partial class ScaffoldContext : DbContext
         modelBuilder.Entity<VariableList>(entity =>
         {
             entity.Property(e => e.TimeStamp).HasDefaultValueSql("(getdate())", "DF_VariableList_TimeStamp");
-
-            entity.HasOne(d => d.InheritedTypeNavigation).WithMany(p => p.VariableLists)
-                .HasPrincipalKey(p => p.Name)
-                .HasForeignKey(d => d.InheritedType)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_VariableList_VariableTypeList");
-
-            entity.HasOne(d => d.User).WithMany(p => p.VariableLists)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_VariableList_UserList");
         });
 
         modelBuilder.Entity<VariableTypeList>(entity =>

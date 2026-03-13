@@ -114,24 +114,11 @@ Gs.Behaviors.BeforeSetMenu = function (htmlContentId) {
     //Gs.Behaviors.LoadUserSettings();
 
     //RESET here storage tables from Portal Menu
-    Metro.storage.delItem("SelectedMenuId");
-    Metro.storage.delItem('ApiTableList');
-    Metro.storage.delItem("SelectedMenu");
-    Metro.storage.delItem("ServerStartUpScriptList");
-    Metro.storage.delItem("FtpServerStatus");
-    Metro.storage.delItem("SchedulerServerStatus");   
-    Metro.storage.delItem("MyQuestionList");
-    Metro.storage.delItem("QuestionForResponseList");
-    Metro.storage.delItem("SolutionCodeLibraryList"); 
-    Metro.storage.delItem("SolutionMixedEnumList");
-    Metro.storage.delItem("SelectedEditor");
-    Metro.storage.delItem("PortalApiTableList");
-    Metro.storage.delItem("EmailTemplateList");
-    Metro.storage.delItem("RunAdminQueryResultList");
-    Metro.storage.delItem("AudioNotepadList");
-    Metro.storage.delItem("DataTableList");
-    Metro.storage.delItem("CodeGeneratorList");
-    
+    Metro.storage.delItem("VariableTypeList");
+    Metro.storage.delItem('VariableList');
+    Metro.storage.delItem('UserRoleList');
+    Metro.storage.delItem('MachineList');
+
 
     Metro.storage.delItem("SelectedEditor");
     //Metro.storage.delItem("RunFunction");
