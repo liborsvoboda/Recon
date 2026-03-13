@@ -26,6 +26,9 @@ public partial class MachineList
     public int CycleReadInterval { get; set; }
 
     [Unicode(false)]
+    public string MachineVariables { get; set; } = null!;
+
+    [Unicode(false)]
     public string? Description { get; set; }
 
     public int UserId { get; set; }
