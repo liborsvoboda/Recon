@@ -12,6 +12,8 @@ public partial class ScaffoldContext : DbContext
     {
     }
 
+    public virtual DbSet<DatabaseVariableTypeList> DatabaseVariableTypeLists { get; set; }
+
     public virtual DbSet<ExportSettingList> ExportSettingLists { get; set; }
 
     public virtual DbSet<MachineList> MachineLists { get; set; }
@@ -33,6 +35,11 @@ public partial class ScaffoldContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("Czech_CS_AS");
+
+        modelBuilder.Entity<DatabaseVariableTypeList>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_DatabaseVariableType");
+        });
 
         modelBuilder.Entity<ExportSettingList>(entity =>
         {

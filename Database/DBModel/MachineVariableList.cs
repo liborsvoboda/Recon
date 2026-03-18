@@ -20,9 +20,9 @@ public partial class MachineVariableList
     [Unicode(false)]
     public string VariableName { get; set; } = null!;
 
-    public bool InsertRequest { get; set; }
-
-    public bool UpdateRequest { get; set; }
+    [StringLength(50)]
+    [Unicode(false)]
+    public string DbRequestType { get; set; } = null!;
 
     [StringLength(50)]
     [Unicode(false)]

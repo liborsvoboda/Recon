@@ -6,7 +6,7 @@ Gs.Behaviors.PortalStartup = async function () {
     if (Metro.storage.getItem("ApiToken", null) != null) { Cookies.set("ApiToken", Metro.storage.getItem("ApiToken", null).Token); }
 
     await Gs.Apis.RunServerGetApi("MenuList/GetMenuList", "MenuList","GenerateMenuList");
-
+    await Gs.Apis.RunServerGetApi("ExportSettingList/GetExportSettingList", "ExportSettingList");
     //$(document).ready(function () {
     //    setTimeout(function () {
     //        GenerateMenuList();
