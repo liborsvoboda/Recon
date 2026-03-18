@@ -33,6 +33,7 @@
 
   <ItemGroup>
     <Folder Include="Database\DBModel\" />
+    <Folder Include="Data\" />
   </ItemGroup>
 
 </Project>

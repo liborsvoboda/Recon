@@ -1,4 +1,6 @@
-﻿namespace Recon.Classes
+﻿using System.Collections.Immutable;
+
+namespace Recon.Classes
 {
     public class JsonResult
     {
@@ -59,4 +61,5 @@
         public bool IsValid { get; set; } = false;
         public string userRole { get; set; } = null;
     }
+
 }

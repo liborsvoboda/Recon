@@ -23,11 +23,6 @@ public partial class MachineList
     [Unicode(false)]
     public string? Image { get; set; }
 
-    public int CycleReadInterval { get; set; }
-
-    [Unicode(false)]
-    public string MachineVariables { get; set; } = null!;
-
     [Unicode(false)]
     public string? Description { get; set; }
 

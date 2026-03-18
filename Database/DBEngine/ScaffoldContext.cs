@@ -12,7 +12,11 @@ public partial class ScaffoldContext : DbContext
     {
     }
 
+    public virtual DbSet<ExportSettingList> ExportSettingLists { get; set; }
+
     public virtual DbSet<MachineList> MachineLists { get; set; }
+
+    public virtual DbSet<MachineVariableList> MachineVariableLists { get; set; }
 
     public virtual DbSet<MenuList> MenuLists { get; set; }
 
@@ -30,9 +34,19 @@ public partial class ScaffoldContext : DbContext
     {
         modelBuilder.UseCollation("Czech_CS_AS");
 
+        modelBuilder.Entity<ExportSettingList>(entity =>
+        {
+            entity.Property(e => e.TimeStamp).HasDefaultValueSql("(getdate())", "DF_ExportSettingList_TimeStamp");
+        });
+
         modelBuilder.Entity<MachineList>(entity =>
         {
             entity.Property(e => e.TimeStamp).HasDefaultValueSql("(getdate())", "DF_MachineList_TimeStamp");
+        });
+
+        modelBuilder.Entity<MachineVariableList>(entity =>
+        {
+            entity.Property(e => e.TimeStamp).HasDefaultValueSql("(getdate())", "DF_MachineVariableList_TimeStamp");
         });
 
         modelBuilder.Entity<MenuList>(entity =>

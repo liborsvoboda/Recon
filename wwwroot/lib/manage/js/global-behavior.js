@@ -110,9 +110,6 @@ Gs.Behaviors.DisableScroll = function () {
 Gs.Behaviors.BeforeSetMenu = function (htmlContentId) {
     Gs.Variables.monacoEditorList = [];
 
-    //SET UserSetting
-    //Gs.Behaviors.LoadUserSettings();
-
     //RESET here storage tables from Portal Menu
     Metro.storage.delItem("VariableTypeList");
     Metro.storage.delItem('VariableList');
@@ -124,9 +121,7 @@ Gs.Behaviors.BeforeSetMenu = function (htmlContentId) {
     //Metro.storage.delItem("RunFunction");
 
     Gs.Functions.RemoveElement("InheritScript"); Gs.Functions.RemoveElement("InheritStyle");
-    let menu = JSON.parse(JSON.stringify(Metro.storage.getItem('MenuList', null)));
-    Metro.storage.setItem('SelectedMenu', menu.filter(obj => { return obj.Id == htmlContentId })[0]);
-    Metro.storage.setItem('SelectedMenuId', menu.filter(obj => { return obj.Id == htmlContentId })[0].Id);
+    let menu = Metro.storage.getItem('MenuList', null);
     return menu;
 }
 

@@ -1,11 +1,16 @@
 using Microsoft.OpenApi;
+using Recon.Services;
 
 public partial class Program
 {
+    public static Settings Settings = new() { SettingData = GlobalFunctions.LoadSetting() };
+    public static List<MachineData> MachinesData = new();
+
     private static void Main(string[] args)
     {
+
         var builder = WebApplication.CreateBuilder(args);
-        builder.Services.AddDbContext<ReconContext>(opt => opt.UseSqlServer("Server=127.0.0.1\\SQLEXPRESS;Database=RECON;User ID=easyitcenter;Password=easyitcenter;TrustServerCertificate=True;command timeout=300;").UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+        builder.Services.AddDbContext<ReconContext>(opt => opt.UseSqlServer(Program.Settings.SettingData.FirstOrDefault(a => a.Key == "connectionString").Value).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
         builder.Services.AddHttpContextAccessor();
 
         builder.Services.AddRazorPages();
@@ -50,7 +55,7 @@ public partial class Program
                 }
             };
         });
-       
+        builder.Services.AddHostedService<MachineLoaderService>();
 
         var app = builder.Build();
 

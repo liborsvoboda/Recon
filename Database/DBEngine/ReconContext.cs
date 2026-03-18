@@ -23,7 +23,7 @@ namespace Recon.Controllers {
                 optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                 optionsBuilder.EnableSensitiveDataLogging(false); //everytime must be disabled other problem on release
 
-                optionsBuilder.UseSqlServer("Server=127.0.0.1\\SQLEXPRESS;Database=RECON;User ID=easyitcenter;Password=easyitcenter;TrustServerCertificate=True;command timeout=300;");
+                optionsBuilder.UseSqlServer(Program.Settings.SettingData.FirstOrDefault(a=>a.Key == "connectionString").Value);
             }
         }
     }
