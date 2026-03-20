@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Recon.DBModel;
 
 [Table("MachineVariableList")]
+[Index("MachineName", "VariableName", Name = "IX_MachineVariableList", IsUnique = true)]
 public partial class MachineVariableList
 {
     [Key]

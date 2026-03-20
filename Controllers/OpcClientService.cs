@@ -30,7 +30,7 @@ namespace Recon.Controllers {
                 };
                 var res = client.ReadNodes(rCommands);
                 client.Disconnect();
-                return base.Ok(new Classes.JsonResult() { Result = String.Empty, Status = Classes.DBResult.success.ToString() });
+                return base.Ok(new Classes.JsonResult() { Result = String.Empty, Status = DBResult.success.ToString() });
                 
             }
             catch (Exception ex) {

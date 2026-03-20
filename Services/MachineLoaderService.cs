@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Opc.Ua;
 using Opc.UaFx;
 using Opc.UaFx.Client;
 using System.Collections.Immutable;
@@ -19,32 +20,63 @@ namespace Recon.Services
                 while (await timer.WaitForNextTickAsync() && true) {
 
                     List<MachineList> machineList;
-                    using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted })) { machineList = new ReconContext().MachineLists.ToList(); }
+                    using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted })) { 
+                        machineList = new ReconContext().MachineLists.ToList(); }
 
                     machineList.ForEach(machine => {
 
+                        List<MachineVariableList> machineVariableList;
+                        using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted })) {
+                            machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == machine.MachineName).ToList(); }
 
                         var client = new OpcClient(machine.Connection);
-                        try { client.Connect(); } catch (Exception ex) { GlobalFunctions.WriteLogFile($"Machine {machine.MachineName} not Connected " + GlobalFunctions.GetErrMsg(ex)); }
+                        try
+                        {
+                            client.Connect();
+                            List<OpcReadNode> nodeData = new List<OpcReadNode>();
+                            machineVariableList.ForEach(variable =>
+                            {
+                                if (variable.VariableName == "COM_ALIVE" || variable.VariableName == "OPC_ALIVE")
+                                {
+                                    nodeData.Add(new OpcReadNode($"ns=2;s=Machines_definitions.{variable.VariableName}"));
+                                }
+                                else { nodeData.Add(new OpcReadNode($"ns=2;s=Machine1.{variable.VariableName}")); }
+                            });
 
-                        //List<string> jsonData = JsonConvert.DeserializeObject<List<string>>(machine.MachineVariables);
-                        //List<OpcReadNode> nodeData = new List<OpcReadNode>();
-                        //jsonData?.ForEach(node => {
-                        //    nodeData.Add(new OpcReadNode($"ns=2;s=Machine1.{node}"));
+                            var result = client.ReadNodes(nodeData.ToArray());
+                            client.Disconnect();
 
-                        //    var machineData = Program.MachinesData.Where(a => a.MachineName == machine.MachineName).FirstOrDefault();
-                        //    if (machineData == null) { machineData = new();
-                        //        machineData.MachineName = machine.MachineName;
-                        //        //ImmutableDictionary<string, object> variable = new Dictionary<string, object> { { node, 0 } }.ToImmutableDictionary();
-                        //        machineData.LastData.Add(node, 0);
-                        //    } else { }
-                        //});
+                            //FILL PREVIOUS DATA
+                            MachineData machineData = new();
+                            if (Program.MachinesData.Where(a => a.MachineName == machine.MachineName).FirstOrDefault() != null) {
+                                Program.MachinesData.First(a => a.MachineName == machine.MachineName).PreviousData = Program.MachinesData.First(a => a.MachineName == machine.MachineName).LastData.Keys.ToDictionary(_ => _, _ => Program.MachinesData.First(a => a.MachineName == machine.MachineName).LastData[_]);
+                                Program.MachinesData.First(a => a.MachineName == machine.MachineName).LastData.Clear(); 
+                            }
 
-                        //var res = client.ReadNodes(nodeData.ToArray());
-                        client.Disconnect();
+                            //PREPARE LAST DATA
+                            machineData.MachineName = machine.MachineName;
+                            machineData.TimeStamp = DateTime.Now;
+                            int index = 0;
+                            machineVariableList.ForEach(variable => {
+                                machineData.LastData.Add(variable.VariableName, result.ElementAt(index).Value);
+                                index ++;
+                            });
 
+                            //FILL DATA
+                            if (Program.MachinesData.Where(a => a.MachineName == machine.MachineName).FirstOrDefault() == null) {
+                                Program.MachinesData.Add(machineData);
+                            } else {
+                                Program.MachinesData.First(a => a.MachineName == machine.MachineName).TimeStamp = machineData.TimeStamp;
+                                Program.MachinesData.First(a => a.MachineName == machine.MachineName).LastData = machineData.LastData;
+                            }
+
+                        } catch (Exception ex) { GlobalFunctions.WriteLogFile($"Machine {machine.MachineName} not Connected " + GlobalFunctions.GetErrMsg(ex)); }
 
                     });
+
+
+                    //TODO WRITE TO DB
+
 
                 }
             }
