@@ -22,8 +22,6 @@ public partial class ScaffoldContext : DbContext
 
     public virtual DbSet<MenuList> MenuLists { get; set; }
 
-    public virtual DbSet<Table1> Table1s { get; set; }
-
     public virtual DbSet<UserList> UserLists { get; set; }
 
     public virtual DbSet<UserRoleList> UserRoleLists { get; set; }
@@ -59,15 +57,6 @@ public partial class ScaffoldContext : DbContext
         modelBuilder.Entity<MenuList>(entity =>
         {
             entity.Property(e => e.TimeStamp).HasDefaultValueSql("(getdate())", "DF_MenuList_TimeStamp");
-        });
-
-        modelBuilder.Entity<Table1>(entity =>
-        {
-            entity.Property(e => e.TimeStamp).HasDefaultValueSql("(getdate())", "DF_Table_1_TimeStamp");
-
-            entity.HasOne(d => d.User).WithMany(p => p.Table1s)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Table_1_UserList");
         });
 
         modelBuilder.Entity<UserList>(entity =>

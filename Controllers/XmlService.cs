@@ -1,19 +1,24 @@
-﻿using Opc.UaFx;
+﻿using Azure;
+using Microsoft.OpenApi;
+using Opc.UaFx;
 using Opc.UaFx.Client;
+using System.Net;
 using System.Text.Json.Serialization;
+using System.Xml;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Recon.Controllers {
 
 
     [AllowAnonymous]
-    [Route("JsonService")]
+    [Route("XmlService")]
     [ApiController]
     //[ApiExplorerSettings(IgnoreApi = true)]
-    public class JsonService : ControllerBase {
+    public class XmlService : ControllerBase {
 
-        [HttpGet("/JsonService/GetFullData")]
-        public async Task<string> GetFullData() {
+        [HttpGet("/XmlService/GetFullData")]
+        [Produces("application/xml")]
+        public async Task<IActionResult> GetFullData() {
             List<MachineData> data = Program.MachinesData;
             List<UpdateMachineData> updateData = new List<UpdateMachineData>();
             try {
@@ -25,25 +30,22 @@ namespace Recon.Controllers {
                      updateData.Add(updateMachineData); 
                 });
 
-                return JsonSerializer.Serialize(updateData, new JsonSerializerOptions() { 
-                    ReferenceHandler = ReferenceHandler.IgnoreCycles, WriteIndented = true, 
-                    //DictionaryKeyPolicy = JsonNamingPolicy.CamelCase, 
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                return Ok(updateData);
+
             } catch (Exception ex) {
-                return JsonSerializer.Serialize(updateData, new JsonSerializerOptions() { 
-                    ReferenceHandler = ReferenceHandler.IgnoreCycles, WriteIndented = true, 
-                    //DictionaryKeyPolicy = JsonNamingPolicy.CamelCase, 
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                return Ok(updateData);
             }
 
         }
 
 
-        [HttpGet("/JsonService/GetUpdateData")]
-        public async Task<string> GetUpdateData() {
+        [HttpGet("/XmlService/GetUpdateData")]
+        [Produces("application/xml")]
+        public async Task<IActionResult> GetUpdateData() {
             List<MachineData> data = Program.MachinesData;
+            List<UpdateMachineData> updateData = new List<UpdateMachineData>();
             try {
-                List<UpdateMachineData> updateData = new List<UpdateMachineData>();
+                
                 data.ForEach(x => {
                     UpdateMachineData updateMachineData = new UpdateMachineData();
                     updateMachineData.MachineName = x.MachineName;
@@ -60,19 +62,9 @@ namespace Recon.Controllers {
                     if (updateMachineData.Data.Count > 0) { updateData.Add(updateMachineData); }
                 });
 
-                return JsonSerializer.Serialize(updateData, new JsonSerializerOptions() {
-                    ReferenceHandler = ReferenceHandler.IgnoreCycles,
-                    WriteIndented = true,
-                    //DictionaryKeyPolicy = JsonNamingPolicy.CamelCase, 
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
+                return Ok(updateData);
             } catch (Exception ex) {
-                return JsonSerializer.Serialize(data, new JsonSerializerOptions() {
-                    ReferenceHandler = ReferenceHandler.IgnoreCycles,
-                    WriteIndented = true,
-                    //DictionaryKeyPolicy = JsonNamingPolicy.CamelCase, 
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
+                return Ok(updateData);
             }
         }
     }

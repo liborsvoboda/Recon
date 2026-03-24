@@ -13,7 +13,7 @@ public partial class Program
         builder.Services.AddDbContext<ReconContext>(opt => opt.UseSqlServer(Settings.SettingData.FirstOrDefault(a => a.Key == "connectionString").Value).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
         builder.Services.AddHttpContextAccessor();
 
-        builder.Services.AddRazorPages();
+        builder.Services.AddRazorPages().AddXmlSerializerFormatters().AddXmlDataContractSerializerFormatters(); ;
         builder.Services.AddSwaggerGen(c=> {
             c.AddSecurityDefinition(
                 "Bearer",

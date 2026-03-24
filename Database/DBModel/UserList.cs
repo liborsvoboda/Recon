@@ -45,7 +45,4 @@ public partial class UserList
     [ForeignKey("RoleName")]
     [InverseProperty("UserLists")]
     public virtual UserRoleList RoleNameNavigation { get; set; } = null!;
-
-    [InverseProperty("User")]
-    public virtual ICollection<Table1> Table1s { get; set; } = new List<Table1>();
 }
