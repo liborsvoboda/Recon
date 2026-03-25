@@ -1,8 +1,9 @@
-﻿using Newtonsoft.Json;
-using Opc.Ua;
+﻿using Microsoft.Data.SqlClient;
 using Opc.UaFx;
 using Opc.UaFx.Client;
 using System.Collections.Immutable;
+using System.Data;
+
 
 namespace Recon.Services
 {
@@ -12,21 +13,20 @@ namespace Recon.Services
         private static PeriodicTimer timer;
 
         public MachineLoaderService(ILogger<MachineLoaderService> logger) { _logger = logger; }
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
             timer = new PeriodicTimer(TimeSpan.FromMilliseconds(double.Parse(Program.Settings.SettingData.GetValueOrDefault("machinesLoadInterval"))));
 
             try {
                 while (await timer.WaitForNextTickAsync() && true) {
 
                     List<MachineList> machineList;
-                    using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted })) { 
+                    using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted })) { 
                         machineList = new ReconContext().MachineLists.ToList(); }
 
                     machineList.ForEach(machine => {
 
                         List<MachineVariableList> machineVariableList;
-                        using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted })) {
+                        using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted })) {
                             machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == machine.MachineName).ToList(); }
 
                         var client = new OpcClient(machine.Connection);
@@ -76,8 +76,52 @@ namespace Recon.Services
 
 
                     //TODO WRITE TO DB
+                    ExportSettingList exportSettingList;
+                    using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted })) {
+                        exportSettingList = new ReconContext().ExportSettingLists.Where(a => a.EnableDbExport == true).FirstOrDefault(); }
 
+                    if (exportSettingList.EnableDbExport) {
+                        Program.MachinesData.ForEach(x => {
+                            List<MachineVariableList> machineVariableList;
+                            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted })) {
+                                machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == x.MachineName).ToList(); }
 
+                            foreach (var kvp in x.LastData) {
+                                foreach (var kvk in x.PreviousData) {
+                                    if (kvk.Key == kvp.Key && kvk.Value.ToString() != kvp.Value.ToString()) {
+                                        //DO INSERT or UPDATE
+                                        var variable = machineVariableList.Where(a => a.VariableName == kvp.Key).FirstOrDefault();
+                                        if (variable?.DbRequestType == "Insert") {
+                                            string insert = $"INSERT INTO {variable.InsertTableName} ('{variable.InsertVariableNameColumnName}','{variable.InsertVariableValueColumnName}') VALUES ('{kvp.Key}', '{kvp.Value}');";
+                                            try {
+                                                SqlConnection cnn = new SqlConnection(exportSettingList.TargetDbConnectionString);
+                                                cnn.Open();
+                                                if (cnn.State == ConnectionState.Open) {
+                                                    DataSet dataTable = new();
+                                                    SqlDataAdapter mDataAdapter = new SqlDataAdapter(new SqlCommand(insert, cnn));
+                                                    mDataAdapter.Fill(dataTable);
+                                                    cnn.Close();
+                                                }
+                                            } catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
+                                        } else if (variable?.DbRequestType == "Update") {
+                                            string update = $"UPDATE {variable.UpdateTableName} SET {variable.UpdateVariableValueColumnName} = '{kvp.Value}' WHERE {variable.UpdateVariablePkColumnName} = '{variable.UpdateVariablePkColumnValue}';";
+                                            try {
+                                                SqlConnection cnn = new SqlConnection(exportSettingList.TargetDbConnectionString);
+                                                cnn.Open();
+                                                if (cnn.State == ConnectionState.Open) {
+                                                    DataSet dataTable = new();
+                                                    SqlDataAdapter mDataAdapter = new SqlDataAdapter(new SqlCommand(update, cnn));
+                                                    mDataAdapter.Fill(dataTable);
+                                                    cnn.Close();
+                                                }
+                                            } catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+                    }
                 }
             }
             catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
