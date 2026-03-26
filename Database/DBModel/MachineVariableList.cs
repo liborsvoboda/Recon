@@ -25,10 +25,6 @@ public partial class MachineVariableList
     [Unicode(false)]
     public string DbRequestType { get; set; } = null!;
 
-    [StringLength(50)]
-    [Unicode(false)]
-    public string? VariableValueColumnType { get; set; }
-
     [StringLength(100)]
     [Unicode(false)]
     public string? InsertTableName { get; set; }
@@ -44,10 +40,6 @@ public partial class MachineVariableList
     [StringLength(100)]
     [Unicode(false)]
     public string? UpdateTableName { get; set; }
-
-    [StringLength(50)]
-    [Unicode(false)]
-    public string? UpdateVariablePkColumnType { get; set; }
 
     [StringLength(100)]
     [Unicode(false)]
