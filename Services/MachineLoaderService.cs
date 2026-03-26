@@ -92,7 +92,7 @@ namespace Recon.Services
                                         //DO INSERT or UPDATE
                                         var variable = machineVariableList.Where(a => a.VariableName == kvp.Key).FirstOrDefault();
                                         if (variable?.DbRequestType == "Insert") {
-                                            string insert = $"INSERT INTO {variable.InsertTableName} ('{variable.InsertVariableNameColumnName}','{variable.InsertVariableValueColumnName}') VALUES ('{kvp.Key}', '{kvp.Value}');";
+                                            string insert = $"INSERT INTO {variable.InsertTableName} ([{variable.InsertVariableNameColumnName}],[{variable.InsertVariableValueColumnName}]) VALUES ('{kvp.Key}', '{kvp.Value}');";
                                             try {
                                                 SqlConnection cnn = new SqlConnection(exportSettingList.TargetDbConnectionString);
                                                 cnn.Open();
@@ -102,9 +102,10 @@ namespace Recon.Services
                                                     mDataAdapter.Fill(dataTable);
                                                     cnn.Close();
                                                 }
-                                            } catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
+                                            } 
+                                            catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
                                         } else if (variable?.DbRequestType == "Update") {
-                                            string update = $"UPDATE {variable.UpdateTableName} SET {variable.UpdateVariableValueColumnName} = '{kvp.Value}' WHERE {variable.UpdateVariablePkColumnName} = '{variable.UpdateVariablePkColumnValue}';";
+                                            string update = $"UPDATE {variable.UpdateTableName} SET [{variable.UpdateVariableValueColumnName}] = '{kvp.Value}' WHERE {variable.UpdateVariablePkColumnName} = '{variable.UpdateVariablePkColumnValue}';";
                                             try {
                                                 SqlConnection cnn = new SqlConnection(exportSettingList.TargetDbConnectionString);
                                                 cnn.Open();
@@ -114,7 +115,8 @@ namespace Recon.Services
                                                     mDataAdapter.Fill(dataTable);
                                                     cnn.Close();
                                                 }
-                                            } catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
+                                            } 
+                                            catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
                                         }
                                         break;
                                     }

@@ -79,11 +79,11 @@ Gs.Apis.RunServerPostApi = async function (apiPath, jsonData, storageName, windo
             if (windowFunction != null) { window[windowFunction](); }
             Gs.Behaviors.HidePageLoading();
             
-            if (result.Status == undefined || result.Status == "success") { Gs.Objects.ShowNotify("success", result.Result); return true; }
+            if (result.status == undefined || result.status == "success") { Gs.Objects.ShowNotify("success", result.result); return true; }
             else {
                 if (storageName != null) { Metro.storage.setItem(storageName, []); }
                 if (windowFunction != null) { window[windowFunction](); }
-                Gs.Objects.ShowNotify("alert", result.Status + " " + result.ErrorMessage); return false;
+                Gs.Objects.ShowNotify("alert", result.status + " " + result.errorMessage); return false;
             }
         },
         error: function (err) {

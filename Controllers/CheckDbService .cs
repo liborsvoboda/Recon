@@ -30,7 +30,7 @@ namespace Recon.Controllers {
                     cnn.Close();
 
                 }
-                return JsonSerializer.Serialize(new JsonResult() { Status = DBResult.success.ToString(), Result = string.Empty }, new JsonSerializerOptions()
+                return JsonSerializer.Serialize(new JsonResult() { Status = DBResult.success.ToString(), Result = string.Empty, ErrorMessage = string.Empty }, new JsonSerializerOptions()
                 {
                     ReferenceHandler = ReferenceHandler.IgnoreCycles,
                     WriteIndented = true,
@@ -39,7 +39,7 @@ namespace Recon.Controllers {
                 });
             } catch (Exception ex) {
 
-                return JsonSerializer.Serialize(new JsonResult() { Status = DBResult.error.ToString(), Result = "Program Exception: " + ex.StackTrace }, new JsonSerializerOptions() { 
+                return JsonSerializer.Serialize(new JsonResult() { Status = DBResult.error.ToString(), Result = "Program Exception: " + ex.StackTrace, ErrorMessage = "Program Exception: " + ex.StackTrace }, new JsonSerializerOptions() { 
                     ReferenceHandler = ReferenceHandler.IgnoreCycles, WriteIndented = true, 
                     //DictionaryKeyPolicy = JsonNamingPolicy.CamelCase, 
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
