@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using MySql.Data.MySqlClient;
 using Opc.UaFx;
 using Opc.UaFx.Client;
 using System.Collections.Immutable;
@@ -92,31 +93,66 @@ namespace Recon.Services
                                         //DO INSERT or UPDATE
                                         var variable = machineVariableList.Where(a => a.VariableName == kvp.Key).FirstOrDefault();
                                         if (variable?.DbRequestType == "Insert") {
-                                            string insert = $"INSERT INTO {variable.InsertTableName} ([{variable.InsertVariableNameColumnName}],[{variable.InsertVariableValueColumnName}]) VALUES ('{kvp.Key}', '{kvp.Value}');";
-                                            try {
-                                                SqlConnection cnn = new SqlConnection(exportSettingList.TargetDbConnectionString);
-                                                cnn.Open();
-                                                if (cnn.State == ConnectionState.Open) {
-                                                    DataSet dataTable = new();
-                                                    SqlDataAdapter mDataAdapter = new SqlDataAdapter(new SqlCommand(insert, cnn));
-                                                    mDataAdapter.Fill(dataTable);
-                                                    cnn.Close();
+
+                                            if (exportSettingList.DataBaseType == "MSSQL") {
+                                                try {
+                                                    string insert = $"INSERT INTO {variable.InsertTableName} ([{variable.InsertVariableNameColumnName}],[{variable.InsertVariableValueColumnName}]) VALUES ('{kvp.Key}', '{kvp.Value}');";
+                                                    SqlConnection cnn = new SqlConnection(exportSettingList.TargetDbConnectionString);
+                                                    cnn.Open();
+                                                    if (cnn.State == ConnectionState.Open) {
+                                                        DataSet dataTable = new();
+                                                        SqlDataAdapter mDataAdapter = new SqlDataAdapter(new SqlCommand(insert, cnn));
+                                                        mDataAdapter.Fill(dataTable);
+                                                        cnn.Close();
+                                                    }
                                                 }
-                                            } 
-                                            catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
+                                                catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
+
+                                            } else if (exportSettingList.DataBaseType == "MYSQL") {
+                                                try {
+                                                    var cnn = new MySqlConnection(exportSettingList.TargetDbConnectionString);
+                                                    cnn.Open();
+                                                    if (cnn.State == ConnectionState.Open) {
+                                                        DataSet dataTable = new();
+                                                        MySqlCommand comm = cnn.CreateCommand();
+                                                        comm.CommandText = $"INSERT INTO {variable.InsertTableName}({variable.InsertVariableNameColumnName},{variable.InsertVariableValueColumnName}) VALUES('{kvp.Key}','{kvp.Value}')";
+                                                        comm.ExecuteNonQuery();
+                                                        cnn.Close();
+                                                    }
+                                                }
+                                                catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
+                                            }
                                         } else if (variable?.DbRequestType == "Update") {
-                                            string update = $"UPDATE {variable.UpdateTableName} SET [{variable.UpdateVariableValueColumnName}] = '{kvp.Value}' WHERE {variable.UpdateVariablePkColumnName} = '{variable.UpdateVariablePkColumnValue}';";
-                                            try {
-                                                SqlConnection cnn = new SqlConnection(exportSettingList.TargetDbConnectionString);
-                                                cnn.Open();
-                                                if (cnn.State == ConnectionState.Open) {
-                                                    DataSet dataTable = new();
-                                                    SqlDataAdapter mDataAdapter = new SqlDataAdapter(new SqlCommand(update, cnn));
-                                                    mDataAdapter.Fill(dataTable);
-                                                    cnn.Close();
+
+                                            if (exportSettingList.DataBaseType == "MSSQL") {
+                                                try {
+                                                    string update = $"UPDATE {variable.UpdateTableName} SET [{variable.UpdateVariableValueColumnName}] = '{kvp.Value}' WHERE {variable.UpdateVariablePkColumnName} = '{variable.UpdateVariablePkColumnValue}';";
+                                                    SqlConnection cnn = new SqlConnection(exportSettingList.TargetDbConnectionString);
+                                                    cnn.Open();
+                                                    if (cnn.State == ConnectionState.Open) {
+                                                        DataSet dataTable = new();
+                                                        SqlDataAdapter mDataAdapter = new SqlDataAdapter(new SqlCommand(update, cnn));
+                                                        mDataAdapter.Fill(dataTable);
+                                                        cnn.Close();
+                                                    }
                                                 }
-                                            } 
-                                            catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
+                                                catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
+
+                                            } else if (exportSettingList.DataBaseType == "MYSQL") {
+                                                try {
+                                                    var cnn = new MySqlConnection(exportSettingList.TargetDbConnectionString);
+                                                    cnn.Open();
+                                                    if (cnn.State == ConnectionState.Open) {
+                                                        DataSet dataTable = new();
+                                                        MySqlCommand comm = cnn.CreateCommand();
+                                                        comm.CommandText = $"UPDATE {variable.UpdateTableName} SET {variable.UpdateVariableValueColumnName} = '{kvp.Value}' WHERE {variable.UpdateVariablePkColumnName} = '{variable.UpdateVariablePkColumnValue}'";
+                                                        comm.ExecuteNonQuery();
+                                                        cnn.Close();
+                                                    }
+                                                }
+                                                catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
+
+                                            }
                                         }
                                         break;
                                     }

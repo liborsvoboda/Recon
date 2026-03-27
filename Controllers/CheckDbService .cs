@@ -48,6 +48,40 @@ namespace Recon.Controllers {
         }
 
 
-       
+
+        [HttpPost("/CheckDbService/CheckMysql")]
+        public async Task<string> CheckMysql([FromBody] Connection connection)
+        {
+            try
+            {
+                var cnn = new MySql.Data.MySqlClient.MySqlConnection(connection.ConnectionString);
+                cnn.Open();
+                if (cnn.State == ConnectionState.Open)
+                {
+                    cnn.Close();
+
+                }
+                return JsonSerializer.Serialize(new JsonResult() { Status = DBResult.success.ToString(), Result = string.Empty, ErrorMessage = string.Empty }, new JsonSerializerOptions()
+                {
+                    ReferenceHandler = ReferenceHandler.IgnoreCycles,
+                    WriteIndented = true,
+                    //DictionaryKeyPolicy = JsonNamingPolicy.CamelCase, 
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+            }
+            catch (Exception ex)
+            {
+
+                return JsonSerializer.Serialize(new JsonResult() { Status = DBResult.error.ToString(), Result = "Program Exception: " + ex.StackTrace, ErrorMessage = "Program Exception: " + ex.StackTrace }, new JsonSerializerOptions()
+                {
+                    ReferenceHandler = ReferenceHandler.IgnoreCycles,
+                    WriteIndented = true,
+                    //DictionaryKeyPolicy = JsonNamingPolicy.CamelCase, 
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+            }
+
+        }
+
     }
 }
