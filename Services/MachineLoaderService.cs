@@ -126,7 +126,7 @@ namespace Recon.Services
 
                                             if (exportSettingList.DataBaseType == "MSSQL") {
                                                 try {
-                                                    string update = $"UPDATE {variable.UpdateTableName} SET [{variable.UpdateVariableValueColumnName}] = '{kvp.Value}' WHERE {variable.UpdateVariablePkColumnName} = '{variable.UpdateVariablePkColumnValue}';";
+                                                    string update = $"UPDATE {variable.UpdateTableName} SET [{variable.UpdateVariableValueColumnName}] = '{kvp.Value}' WHERE [{variable.UpdateVariablePkColumnName}] = '{variable.UpdateVariablePkColumnValue}';";
                                                     SqlConnection cnn = new SqlConnection(exportSettingList.TargetDbConnectionString);
                                                     cnn.Open();
                                                     if (cnn.State == ConnectionState.Open) {
