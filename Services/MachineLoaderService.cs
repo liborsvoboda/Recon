@@ -16,12 +16,14 @@ namespace Recon.Services
         public MachineLoaderService(ILogger<MachineLoaderService> logger) { _logger = logger; }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
             timer = new PeriodicTimer(TimeSpan.FromMilliseconds(double.Parse(Program.Settings.SettingData.GetValueOrDefault("machinesLoadInterval"))));
-
+            DateTime startCycle = DateTime.Now;
+            DateTime finishCycle = DateTime.Now;
             try {
                 while (await timer.WaitForNextTickAsync() && true) {
+                    if (bool.Parse(Program.Settings.SettingData.GetValueOrDefault("autoDetectCycleTime"))) { startCycle = DateTime.Now; }
 
                     List<MachineList> machineList;
-                    using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted })) { 
+                    using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted })) {
                         machineList = new ReconContext().MachineLists.ToList(); }
 
                     machineList.ForEach(machine => {
@@ -30,18 +32,14 @@ namespace Recon.Services
                         using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted })) {
                             machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == machine.MachineName).ToList(); }
 
-                        var client = new OpcClient(machine.Connection);
-                        try
-                        {
+                        OpcClient client = new(machine.Connection);
+                        try {
                             client.Connect();
                             List<OpcReadNode> nodeData = new List<OpcReadNode>();
-                            machineVariableList.ForEach(variable =>
-                            {
-                                if (variable.VariableName == "COM_ALIVE" || variable.VariableName == "OPC_ALIVE")
-                                {
+                            machineVariableList.ForEach(variable => {
+                                if (variable.VariableName == "COM_ALIVE" || variable.VariableName == "OPC_ALIVE") {
                                     nodeData.Add(new OpcReadNode($"ns=2;s=Machines_definitions.{variable.VariableName}"));
-                                }
-                                else { nodeData.Add(new OpcReadNode($"ns=2;s=Machine1.{variable.VariableName}")); }
+                                } else { nodeData.Add(new OpcReadNode($"ns=2;s=Machine1.{variable.VariableName}")); }
                             });
 
                             var result = client.ReadNodes(nodeData.ToArray());
@@ -51,7 +49,7 @@ namespace Recon.Services
                             MachineData machineData = new();
                             if (Program.MachinesData.Where(a => a.MachineName == machine.MachineName).FirstOrDefault() != null) {
                                 Program.MachinesData.First(a => a.MachineName == machine.MachineName).PreviousData = Program.MachinesData.First(a => a.MachineName == machine.MachineName).LastData.Keys.ToDictionary(_ => _, _ => Program.MachinesData.First(a => a.MachineName == machine.MachineName).LastData[_]);
-                                Program.MachinesData.First(a => a.MachineName == machine.MachineName).LastData.Clear(); 
+                                Program.MachinesData.First(a => a.MachineName == machine.MachineName).LastData.Clear();
                             }
 
                             //PREPARE LAST DATA
@@ -60,7 +58,7 @@ namespace Recon.Services
                             int index = 0;
                             machineVariableList.ForEach(variable => {
                                 machineData.LastData.Add(variable.VariableName, result.ElementAt(index).Value);
-                                index ++;
+                                index++;
                             });
 
                             //FILL DATA
@@ -77,16 +75,17 @@ namespace Recon.Services
 
 
                     //TODO WRITE TO DB
-                    ExportSettingList exportSettingList;
+                    ExportSettingList? exportSettingList;
                     using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted })) {
                         exportSettingList = new ReconContext().ExportSettingLists.Where(a => a.EnableDbExport == true).FirstOrDefault(); }
 
-                    if (exportSettingList.EnableDbExport) {
+                    if (exportSettingList != null && exportSettingList.EnableDbExport) {
                         Program.MachinesData.ForEach(x => {
                             List<MachineVariableList> machineVariableList;
                             using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted })) {
                                 machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == x.MachineName).ToList(); }
 
+                            bool saveToLocal = false;
                             foreach (var kvp in x.LastData) {
                                 foreach (var kvk in x.PreviousData) {
                                     if (kvk.Key == kvp.Key && kvk.Value.ToString() != kvp.Value.ToString()) {
@@ -96,51 +95,65 @@ namespace Recon.Services
 
                                             if (exportSettingList.DataBaseType == "MSSQL") {
                                                 try {
-                                                    string insert = $"INSERT INTO {variable.InsertTableName} ([{variable.InsertVariableNameColumnName}],[{variable.InsertVariableValueColumnName}]) VALUES ('{kvp.Key}', '{kvp.Value}');";
-                                                    SqlConnection cnn = new SqlConnection(exportSettingList.TargetDbConnectionString);
+                                                    string insert = $"INSERT INTO {variable.InsertTableName} ([{variable.InsertMachineNameColumnName}],[{variable.InsertVariableNameColumnName}],[{variable.InsertVariableValueColumnName}]) VALUES ('{x.MachineName}', '{kvp.Key}', '{kvp.Value}');";
+                                                    SqlConnection cnn = new(exportSettingList.TargetDbConnectionString);
                                                     cnn.Open();
                                                     if (cnn.State == ConnectionState.Open) {
                                                         DataSet dataTable = new();
-                                                        SqlDataAdapter mDataAdapter = new SqlDataAdapter(new SqlCommand(insert, cnn));
+                                                        SqlDataAdapter mDataAdapter = new(new SqlCommand(insert, cnn));
                                                         mDataAdapter.Fill(dataTable);
                                                         cnn.Close();
+                                                        saveToLocal = false;
+                                                    } else { saveToLocal = true; }
+
+                                                    if (saveToLocal) {
+                                                        InsertTable record = new() { MachineName = x.MachineName, VariableName = kvp.Key, VariableValue = kvp.Value.ToString() };
+                                                        var data = new ReconContext().InsertTables.Add(record);
+                                                        data.Context.SaveChanges();
                                                     }
                                                 }
-                                                catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
+                                                catch (Exception ex) { GlobalFunctions.WriteLogFile("Machine Loader Service Insert MSSQL Program Exception: " + ex.StackTrace); }
 
                                             } else if (exportSettingList.DataBaseType == "MYSQL") {
                                                 try {
-                                                    var cnn = new MySqlConnection(exportSettingList.TargetDbConnectionString);
+                                                    MySqlConnection cnn = new(exportSettingList.TargetDbConnectionString);
                                                     cnn.Open();
                                                     if (cnn.State == ConnectionState.Open) {
                                                         DataSet dataTable = new();
                                                         MySqlCommand comm = cnn.CreateCommand();
-                                                        comm.CommandText = $"INSERT INTO {variable.InsertTableName}({variable.InsertVariableNameColumnName},{variable.InsertVariableValueColumnName}) VALUES('{kvp.Key}','{kvp.Value}')";
+                                                        comm.CommandText = $"INSERT INTO {variable.InsertTableName}({variable.InsertMachineNameColumnName},{variable.InsertVariableNameColumnName},{variable.InsertVariableValueColumnName}) VALUES('{x.MachineName}', '{kvp.Key}', '{kvp.Value}')";
                                                         comm.ExecuteNonQuery();
                                                         cnn.Close();
+                                                        saveToLocal = false;
+                                                    } else { saveToLocal = true; }
+
+                                                    if (saveToLocal) {
+                                                        InsertTable record = new() { MachineName = x.MachineName, VariableName = kvp.Key, VariableValue = kvp.Value.ToString() };
+                                                        var data = new ReconContext().InsertTables.Add(record);
+                                                        data.Context.SaveChanges();
                                                     }
                                                 }
-                                                catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
+                                                catch (Exception ex) { GlobalFunctions.WriteLogFile("Machine Loader Service Insert MYSQL Program Exception: " + ex.StackTrace); }
                                             }
                                         } else if (variable?.DbRequestType == "Update") {
 
                                             if (exportSettingList.DataBaseType == "MSSQL") {
                                                 try {
                                                     string update = $"UPDATE {variable.UpdateTableName} SET [{variable.UpdateVariableValueColumnName}] = '{kvp.Value}' WHERE [{variable.UpdateVariablePkColumnName}] = '{variable.UpdateVariablePkColumnValue}';";
-                                                    SqlConnection cnn = new SqlConnection(exportSettingList.TargetDbConnectionString);
+                                                    SqlConnection cnn = new(exportSettingList.TargetDbConnectionString);
                                                     cnn.Open();
                                                     if (cnn.State == ConnectionState.Open) {
                                                         DataSet dataTable = new();
-                                                        SqlDataAdapter mDataAdapter = new SqlDataAdapter(new SqlCommand(update, cnn));
+                                                        SqlDataAdapter mDataAdapter = new(new SqlCommand(update, cnn));
                                                         mDataAdapter.Fill(dataTable);
                                                         cnn.Close();
                                                     }
                                                 }
-                                                catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
+                                                catch (Exception ex) { GlobalFunctions.WriteLogFile("Machine Loader Service Update MSSQL Program Exception: " + ex.StackTrace); }
 
                                             } else if (exportSettingList.DataBaseType == "MYSQL") {
                                                 try {
-                                                    var cnn = new MySqlConnection(exportSettingList.TargetDbConnectionString);
+                                                    MySqlConnection cnn = new(exportSettingList.TargetDbConnectionString);
                                                     cnn.Open();
                                                     if (cnn.State == ConnectionState.Open) {
                                                         DataSet dataTable = new();
@@ -150,7 +163,7 @@ namespace Recon.Services
                                                         cnn.Close();
                                                     }
                                                 }
-                                                catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
+                                                catch (Exception ex) { GlobalFunctions.WriteLogFile("Machine Loader Service Update MYSQL Program Exception: " + ex.StackTrace); }
 
                                             }
                                         }
@@ -160,12 +173,20 @@ namespace Recon.Services
                             }
                         });
                     }
+                    if (bool.Parse(Program.Settings.SettingData.GetValueOrDefault("autoDetectCycleTime"))) {
+                        finishCycle = DateTime.Now;
+
+                        Program.Settings.SettingData = Program.Settings.SettingData.SetItem("machinesLoadInterval", ((finishCycle-startCycle).TotalMilliseconds + double.Parse(Program.Settings.SettingData.GetValueOrDefault("plusAutoDetectCycle"))).ToString());
+                        File.WriteAllText(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Data", "config.json"), JsonSerializer.Serialize(Program.Settings.SettingData));
+                        timer = new PeriodicTimer(TimeSpan.FromMilliseconds(double.Parse(Program.Settings.SettingData.GetValueOrDefault("machinesLoadInterval"))));
+                    }
+                        
                 }
             }
-            catch (Exception ex) { GlobalFunctions.WriteLogFile("Program Exception: " + ex.StackTrace); }
+            catch (Exception ex) { GlobalFunctions.WriteLogFile("Machine Loader Service Program Exception: " + ex.StackTrace); }
 
             Debug.WriteLine(DateTime.Now);
-            _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+            _logger.LogInformation("Machine Loader Service running at: {time}", DateTimeOffset.Now);
         }
     }
 }

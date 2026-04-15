@@ -56,7 +56,7 @@ public partial class Program
             };
         });
         builder.Services.AddHostedService<MachineLoaderService>();
-
+        builder.Services.AddHostedService<DataTransferService>();
         var app = builder.Build();
 
         if (!app.Environment.IsDevelopment())
@@ -71,8 +71,6 @@ public partial class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
-
-        app.MapStaticAssets();
         app.MapRazorPages().WithStaticAssets();
 
         app.Use(async (HttpContext context, Func<Task> next) => {
@@ -83,7 +81,7 @@ public partial class Program
         app.MapSwagger();
         app.UseSwagger();
         app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1"); });
-
+        app.UseStaticFiles();
         app.Run();
     }
 }

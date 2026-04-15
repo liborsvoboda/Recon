@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 namespace Recon.DBModel;
 
 [Table("MachineVariableList")]
-[Index("MachineName", "VariableName", Name = "IX_MachineVariableList", IsUnique = true)]
 public partial class MachineVariableList
 {
     [Key]
@@ -31,11 +30,19 @@ public partial class MachineVariableList
 
     [StringLength(100)]
     [Unicode(false)]
+    public string? InsertMachineNameColumnName { get; set; }
+
+    [StringLength(100)]
+    [Unicode(false)]
     public string? InsertVariableNameColumnName { get; set; }
 
     [StringLength(100)]
     [Unicode(false)]
     public string? InsertVariableValueColumnName { get; set; }
+
+    [StringLength(100)]
+    [Unicode(false)]
+    public string? InsertTimeStampColumnName { get; set; }
 
     [StringLength(100)]
     [Unicode(false)]
@@ -52,6 +59,10 @@ public partial class MachineVariableList
     [StringLength(100)]
     [Unicode(false)]
     public string? UpdateVariableValueColumnName { get; set; }
+
+    [StringLength(100)]
+    [Unicode(false)]
+    public string? UpdateTimeStampColumnName { get; set; }
 
     public int UserId { get; set; }
 

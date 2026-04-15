@@ -14,6 +14,8 @@ public partial class ScaffoldContext : DbContext
 
     public virtual DbSet<ExportSettingList> ExportSettingLists { get; set; }
 
+    public virtual DbSet<InsertTable> InsertTables { get; set; }
+
     public virtual DbSet<MachineList> MachineLists { get; set; }
 
     public virtual DbSet<MachineVariableList> MachineVariableLists { get; set; }
@@ -35,6 +37,11 @@ public partial class ScaffoldContext : DbContext
         modelBuilder.Entity<ExportSettingList>(entity =>
         {
             entity.Property(e => e.TimeStamp).HasDefaultValueSql("(getdate())", "DF_ExportSettingList_TimeStamp");
+        });
+
+        modelBuilder.Entity<InsertTable>(entity =>
+        {
+            entity.Property(e => e.TimeStamp).HasDefaultValueSql("(getdate())", "DF_InsertTable_TimeStamp");
         });
 
         modelBuilder.Entity<MachineList>(entity =>

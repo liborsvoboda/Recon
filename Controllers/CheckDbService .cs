@@ -1,10 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
-using Opc.UaFx;
-using Opc.UaFx.Client;
 using System.Data;
 using System.Text.Json.Serialization;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using JsonResult = Recon.Classes.JsonResult;
 
 namespace Recon.Controllers {
