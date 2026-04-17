@@ -46,8 +46,7 @@ namespace Recon.Services
 
             if (bool.Parse(Program.Settings.SettingData.GetValueOrDefault("autoDetectCycleTime"))) { startCycle = DateTime.Now; }
 
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
-            {
+            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted })) {
                 machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == machineName.MachineName).ToList();
             }
 
@@ -56,11 +55,9 @@ namespace Recon.Services
                 client.Connect();
                 List<OpcReadNode> nodeData = new List<OpcReadNode>();
                 machineVariableList.ForEach(variable => {
-                    if (variable.VariableName == "COM_ALIVE" || variable.VariableName == "OPC_ALIVE")
-                    {
+                    if (variable.VariableName == "COM_ALIVE" || variable.VariableName == "OPC_ALIVE") {
                         nodeData.Add(new OpcReadNode($"ns=2;s=Machines_definitions.{variable.VariableName}"));
-                    }
-                    else { nodeData.Add(new OpcReadNode($"ns=2;s=Machine1.{variable.VariableName}")); }
+                    } else { nodeData.Add(new OpcReadNode($"ns=2;s=Machine1.{variable.VariableName}")); }
                 });
 
                 var result = client.ReadNodes(nodeData.ToArray());

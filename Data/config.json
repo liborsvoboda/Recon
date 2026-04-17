@@ -2,6 +2,5 @@
   "connectionString": "Server=127.0.0.1\\SQLEXPRESS;Database=RECON;User ID=easyitcenter;Password=easyitcenter;TrustServerCertificate=True;command timeout=300;",
   "machinesLoadInterval": 10000,
   "dataTransferInterval": 60000,
-  "autoDetectCycleTime": true,
-  "plusAutoDetectCycle": 5000
+  "autoDetectCycleTime": true
 }
