@@ -21,7 +21,8 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.4" />
     <PackageReference Include="MySql.Data" Version="9.6.0" />
-    <PackageReference Include="Opc.UaFx.Advanced" Version="2.51.4.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Opc.UaFx.Advanced" Version="2.52.0" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.13.8" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.5" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="10.1.5" />

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using MySql.Data.MySqlClient;
-using Opc.UaFx;
-using Opc.UaFx.Client;
+//using Opc.UaFx;
+//using Opc.UaFx.Client;
 using System.Collections.Immutable;
 using System.Data;
 
@@ -10,10 +10,10 @@ namespace Recon.Services
 {
     public class DataTransferService : BackgroundService
     {
-        private readonly ILogger<MachineLoaderService> _logger;
+        private readonly ILogger<DataTransferService> _logger;
         private static PeriodicTimer timer;
 
-        public DataTransferService(ILogger<MachineLoaderService> logger) { _logger = logger; }
+        public DataTransferService(ILogger<DataTransferService> logger) { _logger = logger; }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
             timer = new PeriodicTimer(TimeSpan.FromMilliseconds(double.Parse(Program.Settings.SettingData.GetValueOrDefault("dataTransferInterval"))));
 
@@ -40,7 +40,7 @@ namespace Recon.Services
                         if (exportSettingList?.DataBaseType == "MSSQL") {
                             try {
                                 if (machineVariableList != null) {
-                                    string insert = $"INSERT INTO {machineVariableList.InsertTableName} ([{machineVariableList.InsertMachineNameColumnName}], [{machineVariableList.InsertVariableNameColumnName}], [{machineVariableList.InsertVariableValueColumnName}], [{machineVariableList.InsertTimeStampColumnName}]) VALUES ('{record.MachineName}', '{record.VariableName}', '{record.VariableValue}', '{record.TimeStamp}');";
+                                    string insert = $"INSERT INTO {machineVariableList.InsertTableName} ([{machineVariableList.InsertMachineNameColumnName}], [{machineVariableList.InsertVariableNameColumnName}], [{machineVariableList.InsertVariableValueColumnName}], [{machineVariableList.InsertTimeStampColumnName}]) VALUES ('{record.MachineName}', '{record.VariableName}', '{record.VariableValue}', '{record.TimeStamp.ToString("yyyy-MM-dd H:mm:ss")}');";
                                     SqlConnection cnn = new(exportSettingList.TargetDbConnectionString);
                                     cnn.Open();
                                     if (cnn.State == ConnectionState.Open) {
@@ -67,7 +67,7 @@ namespace Recon.Services
                                     if (cnn.State == ConnectionState.Open) {
                                         DataSet dataTable = new();
                                         MySqlCommand comm = cnn.CreateCommand();
-                                        comm.CommandText = $"INSERT INTO {machineVariableList.InsertTableName} ({machineVariableList.InsertMachineNameColumnName}, {machineVariableList.InsertVariableNameColumnName}, {machineVariableList.InsertVariableValueColumnName}, {machineVariableList.InsertTimeStampColumnName}) VALUES('{record.MachineName}', '{record.VariableName}', '{record.VariableValue}', '{record.TimeStamp}')";
+                                        comm.CommandText = $"INSERT INTO {machineVariableList.InsertTableName} ({machineVariableList.InsertMachineNameColumnName}, {machineVariableList.InsertVariableNameColumnName}, {machineVariableList.InsertVariableValueColumnName}, {machineVariableList.InsertTimeStampColumnName}) VALUES('{record.MachineName}', '{record.VariableName}', '{record.VariableValue}', '{record.TimeStamp.ToString("yyyy-MM-dd H:mm:ss")}')";
                                         comm.ExecuteNonQuery();
                                         cnn.Close();
                                         saveDataToRemote = true;

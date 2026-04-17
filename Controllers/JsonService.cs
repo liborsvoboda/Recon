@@ -1,6 +1,4 @@
-﻿using Opc.UaFx;
-using Opc.UaFx.Client;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Recon.Controllers {

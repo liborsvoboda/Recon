@@ -1,4 +1,5 @@
-﻿using Opc.UaFx;
+﻿/*
+using Opc.UaFx;
 using Opc.UaFx.Client;
 
 namespace Recon.Controllers {
@@ -42,3 +43,4 @@ namespace Recon.Controllers {
 
     }
 }
+*/

@@ -55,7 +55,7 @@ public partial class Program
                 }
             };
         });
-        builder.Services.AddHostedService<MachineLoaderService>();
+        builder.Services.AddHostedService<MachineCycleService>();
         builder.Services.AddHostedService<DataTransferService>();
         var app = builder.Build();
 
