@@ -115,7 +115,8 @@ Gs.Behaviors.BeforeSetMenu = function (htmlContentId) {
     Metro.storage.delItem('VariableList');
     Metro.storage.delItem('UserRoleList');
     Metro.storage.delItem('MachineList');
-
+    Metro.storage.delItem('ExportJSON');
+    Metro.storage.delItem('ExportXML');
 
     Metro.storage.delItem("SelectedEditor");
     //Metro.storage.delItem("RunFunction");

@@ -10,6 +10,35 @@ Gs.Apis.SavePublicCapturedVideo = async function (filename) {
 }
 
 
+Gs.Apis.RunServerGetXMLApi = async function (apiPath, storageName, windowFunction = null) {
+        Gs.Behaviors.ShowPageLoading();
+        $.ajax({
+            global: false,
+            type: "GET",
+            url: Metro.storage.getItem('ApiOriginSuffix', null) + apiPath,
+            async: true,
+            cache: false,
+            headers: JSON.parse(JSON.stringify(Metro.storage.getItem("ApiToken", null))) != null ? { 'Content-type': 'application/json charset=UTF-8', 'Authorization': 'Bearer ' + Metro.storage.getItem('ApiToken', null).Token } : { 'Content-type': 'application/json' },
+            contentType: "application/xml; charset=utf-8",
+            dataType: "xml",
+            success: function (result) {
+                if (storageName != null) {
+                    Metro.storage.setItem(storageName, new XMLSerializer().serializeToString(result).replaceAll(">", ">\n"));
+                    if (windowFunction != null) { window[windowFunction](); }
+                    Gs.Behaviors.HidePageLoading();
+                }
+            },
+            error: function (err) {
+                console.log(err);
+                if (storageName != null) { Metro.storage.setItem(storageName, []); }
+                if (windowFunction != null) { window[windowFunction](); }
+                Gs.Behaviors.HidePageLoading();
+                Gs.Objects.ShowNotify("alert", err.statusText); return false;
+            }
+        });
+    }
+
+
 Gs.Apis.DownloadApi = async function (apiPath, jsonData, filename, binary, storageName = null, windowFunction = null ) {
     //used for Downloading files
     Gs.Behaviors.ShowPageLoading();

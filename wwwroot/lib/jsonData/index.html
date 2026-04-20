@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>JSON Random DATA Generator</title>
+
+    <link rel="stylesheet" href="./css/styles.css?v=1.9.0">
+</head>
+    <body>
+        <header role="banner">
+            <h1>
+                <a href="/" class="branding">JSON Generator</a>
+            </h1>
+            <div class="controls">
+                <a id="generate" href="#generate" class="btn">Generate</a>
+                <a id="reset-ui" href="#" title="Resets template and output fields" class="btn btn-reset">Reset</a>
+            </div>
+            <nav role="navigation">
+                <ul>
+                    <li>
+                        <a href="#" data-tab="help-tab" class="show-sidebar">
+                            <span class="ico-faq"></span>
+                            Help
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </header>
+        <div role="main" class="viewport">
+            <section class="box template-box">
+                <div id="template-editor"></div>
+                <div class="handle"></div>
+            </section>
+            <section class="box result-box">
+                <h2 class="wait-magic">
+                    <span class="ico-magic"></span>
+                    <br>
+                    Click "Generate"<br>
+                    and wait for<br>the magic here
+                </h2>
+                <code id="result-editor"></code>
+                <span class="badge badge-code-size"></span>
+                <ul id="actions">
+                    <li class="a-generated">
+                        <a id="copy-code" href="#" title="Copy JSON to clipboard">Copy JSON to clipboard</a>
+                    </li>
+                    <li class="a-uploaded">
+                        <a id="copy-url" href="#" title="Copy uploaded JSON file URL to clipboard">Copy JSON file URL</a>
+                    </li>
+                    <li class="a-generated">
+                        <a id="download-code" href="#" download="generated.json" title="Download file with generated JSON">Download JSON file</a>
+                    </li>
+                    <li class="a-generated">
+                        <span>
+                            Indent: 
+                            <select id="json-indent" title="Select JSON indentation">
+                                <option value="0">Compact</option>
+                                <option value="2" selected>2 space tab</option>
+                                <option value="3">3 space tab</option>
+                                <option value="4">4 space tab</option>
+                            </select>
+                        </span>
+                    </li>
+                </ul>
+            </section>
+            <aside>
+                <a href="#" class="close">&times;</a>
+                <div class="scroll-container">
+                    <article class="help-tab">
+                        <h2>Help</h2>
+                        <h3>List of template tags</h3>
+                        <dl>
+                            <dt>
+                                <a href="#random">random</a>
+                            </dt>
+                            <dd id="random">
+                                <p>Returns random item from passed arguments list.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{random([arg1], [arg2] ... [argN])}}</code>
+                                </pre>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-*">*</span>
+                            </dd>
+                            <dt>
+                                <a href="#repeat">repeat</a>
+                            </dt>
+                            <dd id="repeat">
+                                <p>Specifies number of repeats of array item. Repeatable array must contains only two items: first is repeat tag, second is item that must be repeated. If no arguments is specified item will be repeated from 0 to 10 times. If min argument is specified, item will be repeated that many times. If both arguments are specified, item will be repeated in specified range of times.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{repeat([min], [max])}}</code>
+                                </pre>
+                                <h4>Arguments</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Param</th>
+                                            <th>Type</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                min <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-number">Number</span>
+                                            </td>
+                                            <td>Minimum number in the range. Default is 0.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                max <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-number">Number</span>
+                                            </td>
+                                            <td>Maximum number in the range. Default is 10.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-number">Number</span>
+                            </dd>
+                            <dt>
+                                <a href="#index">index</a>
+                            </dt>
+                            <dd id="index">
+                                <p>Index of current cloned object starting from 0.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{index([startFrom])}}</code>
+                                </pre>
+                                <h4>Arguments</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Param</th>
+                                            <th>Type</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                startFrom <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-number">Number</span>
+                                            </td>
+                                            <td>Index will start from this value. Default is 0.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-number">Number</span>
+                            </dd>
+                            <dt>
+                                <a href="#integer">integer</a>
+                            </dt>
+                            <dd id="integer">
+                                <p>Random integer in specified range. Can be negative.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{integer([min], [max], [format])}}</code>
+                                </pre>
+                                <h4>Arguments</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Param</th>
+                                            <th>Type</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                min <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-number">Number</span>
+                                            </td>
+                                            <td>Minimum number in the range. Default is 0.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                max <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-number">Number</span>
+                                            </td>
+                                            <td>Maximum number in the range. Default is 10.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                format <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-string">String</span>
+                                            </td>
+                                            <td>
+                                                Number format. For more info visit <a href="http://adamwdraper.github.io/Numeral-js/" target="_blank">Numeral.js</a>
+                                                .
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-number">Number</span>
+                                <span class="type-hint type-hint-string">String</span>
+                            </dd>
+                            <dt>
+                                <a href="#floating">floating</a>
+                            </dt>
+                            <dd id="floating">
+                                <p>Random float in specified range. If min argument is float, generated number will be float too with same number of decimals. Can be negative.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{floating([min], [max], [fixed], [format])}}</code>
+                                </pre>
+                                <h4>Arguments</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Param</th>
+                                            <th>Type</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                min <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-number">Number</span>
+                                            </td>
+                                            <td>Minimum number in the range. Default is 0.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                max <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-number">Number</span>
+                                            </td>
+                                            <td>Maximum number in the range. Default is 10.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                fixed <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-number">Number</span>
+                                            </td>
+                                            <td>Number of decimals. Default is 4.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                format <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-string">String</span>
+                                            </td>
+                                            <td>
+                                                Number format. For more info visit <a href="http://adamwdraper.github.io/Numeral-js/" target="_blank">Numeral.js</a>
+                                                .
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-number">Number</span>
+                                <span class="type-hint type-hint-string">String</span>
+                            </dd>
+                            <dt>
+                                <a href="#bool">bool</a>
+                            </dt>
+                            <dd id="bool">
+                                <p>Random boolean value.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{bool()}}</code>
+                                </pre>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-boolean">Boolean</span>
+                            </dd>
+                            <dt>
+                                <a href="#date">date</a>
+                            </dt>
+                            <dd id="date">
+                                <p>Random date in specified range.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{date([min], [max], [format])}}</code>
+                                </pre>
+                                <h4>Arguments</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Param</th>
+                                            <th>Type</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                min <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-date">Date</span>
+                                            </td>
+                                            <td>Minimum date in the range. Default is new Date(1970, 0, 1).</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                max <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-date">Date</span>
+                                            </td>
+                                            <td>Maximum date in the range. Default is new Date().</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                format <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-string">String</span>
+                                            </td>
+                                            <td>
+                                                Date format. For more info visit <a href="http://github.com/hogart/datef" target="_blank">datef</a>
+                                                .
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-number">Number</span>
+                            </dd>
+                            <dt>
+                                <a href="#lorem">lorem</a>
+                            </dt>
+                            <dd id="lorem">
+                                <p>
+                                    Random <a href="http://www.lipsum.com/" target="_blank">Lorem Ipsum</a>
+                                    text.
+                                </p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{lorem([count], [units])}}</code>
+                                </pre>
+                                <h4>Arguments</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Param</th>
+                                            <th>Type</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                count <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-number">Number</span>
+                                            </td>
+                                            <td>Number of generated units. Default is 1.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                units <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-string">String</span>
+                                            </td>
+                                            <td>Units type. Can be words, sentences, or paragraphs. Default is sentences.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-string">String</span>
+                            </dd>
+                            <dt>
+                                <a href="#objectId">objectId</a>
+                            </dt>
+                            <dd id="objectId">
+                                <p>MongoDB's globally unique identifier for objects.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{objectId()}}</code>
+                                </pre>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-string">String</span>
+                            </dd>
+                            <dt>
+                                <a href="#guid">guid</a>
+                            </dt>
+                            <dd id="guid">
+                                <p>
+                                    Random <a href="http://en.wikipedia.org/wiki/GUID" target="_blank">globally unique identifier</a>
+                                    .
+                                </p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{guid()}}</code>
+                                </pre>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-string">String</span>
+                            </dd>
+                            <dt>
+                                <a href="#custom-function">custom function</a>
+                            </dt>
+                            <dd id="custom-function">
+                                <p>You can create your own function, that returns any value. this keyword contains current generated object so you can refer previous existing fields as shown in example.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>function (tags, index) {
+  // Your code 
+}</code>
+                                </pre>
+                                <h4>Arguments</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Param</th>
+                                            <th>Type</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>tags</td>
+                                            <td>
+                                                <span class="type-hint type-hint-object">Object</span>
+                                            </td>
+                                            <td>Object with generation methods which has same names as the tags.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>index</td>
+                                            <td>
+                                                <span class="type-hint type-hint-number">Number</span>
+                                            </td>
+                                            <td>Index of current cloned object starting from 0.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-*">*</span>
+                            </dd>
+                            <dt>
+                                <a href="#firstName">firstName</a>
+                            </dt>
+                            <dd id="firstName">
+                                <p>Random person name of both genders if no gender is specified.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{firstName([gender])}}</code>
+                                </pre>
+                                <h4>Arguments</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Param</th>
+                                            <th>Type</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                gender <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-string">String</span>
+                                            </td>
+                                            <td>Gender of person name. Can be male or female.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-string">String</span>
+                            </dd>
+                            <dt>
+                                <a href="#gender">gender</a>
+                            </dt>
+                            <dd id="gender">
+                                <p>Previously generated person gender. Must be after field, that contains firstName tag.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{gender()}}</code>
+                                </pre>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-string">String</span>
+                            </dd>
+                            <dt>
+                                <a href="#surname">surname</a>
+                            </dt>
+                            <dd id="surname">
+                                <p>Random person surname.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{surname()}}</code>
+                                </pre>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-string">String</span>
+                            </dd>
+                            <dt>
+                                <a href="#company">company</a>
+                            </dt>
+                            <dd id="company">
+                                <p>Random company name.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{company()}}</code>
+                                </pre>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-string">String</span>
+                            </dd>
+                            <dt>
+                                <a href="#email">email</a>
+                            </dt>
+                            <dd id="email">
+                                <p>Generates email based on firstName, surname and company that are called before of it.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{email([random])}}</code>
+                                </pre>
+                                <h4>Arguments</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Param</th>
+                                            <th>Type</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                random <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-boolean">Boolean</span>
+                                            </td>
+                                            <td>If true, random email address will be generated. Default is false.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-string">String</span>
+                            </dd>
+                            <dt>
+                                <a href="#phone">phone</a>
+                            </dt>
+                            <dd id="phone">
+                                <p>Generates random phone number. </p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{phone([format])}}</code>
+                                </pre>
+                                <h4>Arguments</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Param</th>
+                                            <th>Type</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                format <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-string">String</span>
+                                            </td>
+                                            <td>Format string which contains x letters. Default is "(xxx) xxx-xxxx".</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-string">String</span>
+                            </dd>
+                            <dt>
+                                <a href="#country">country</a>
+                            </dt>
+                            <dd id="country">
+                                <p>Random country name.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{country()}}</code>
+                                </pre>
+                                <h4>Arguments</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Param</th>
+                                            <th>Type</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                abbreviation <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-boolean">Boolean</span>
+                                            </td>
+                                            <td>If passed returns country name abbreviation instead of full name.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-string">String</span>
+                            </dd>
+                            <dt>
+                                <a href="#countriesList">countriesList</a>
+                            </dt>
+                            <dd id="countriesList">
+                                <p>Returns a list of 205 unique countries instead of passed string.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{countriesList()}}</code>
+                                </pre>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-array">Array</span>
+                            </dd>
+                            <dt>
+                                <a href="#state">state</a>
+                            </dt>
+                            <dd id="state">
+                                <p>Random US state name.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{state()}}</code>
+                                </pre>
+                                <h4>Arguments</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Param</th>
+                                            <th>Type</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                abbreviation <small>(optional)</small>
+                                            </td>
+                                            <td>
+                                                <span class="type-hint type-hint-boolean">Boolean</span>
+                                            </td>
+                                            <td>If passed returns state name abbreviation instead of full name.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-string">String</span>
+                            </dd>
+                            <dt>
+                                <a href="#city">city</a>
+                            </dt>
+                            <dd id="city">
+                                <p>Random US city name.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{city()}}</code>
+                                </pre>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-string">String</span>
+                            </dd>
+                            <dt>
+                                <a href="#street">street</a>
+                            </dt>
+                            <dd id="street">
+                                <p>Random US street name.</p>
+                                <h4>Usage</h4>
+                                <pre>
+                                    <code>{{street()}}</code>
+                                </pre>
+                                <h4>Returns</h4>
+                                <span class="type-hint type-hint-string">String</span>
+                            </dd>
+                        </dl>
+                        <h3>About</h3>
+                        <p>We've all faced the problem of lack of information in our app. All interfaces seem lifeless and empty. Debugging with no data is also not simple.</p>
+                        <p>
+                            I think that each of us has at least once in their lives created a bunch of files with <a href="http://json.org/" target="_blank">JSON</a>
+                            data, but they were just one object propagated without unique fields. JSON Generator was created in order to help with this. It provides an opportunity generate any data and in any quantity. Edit template, click "Generate" and you're done.
+                        </p>
+                        <p>If you have found a bug, you have a suggestion for improving the application or just want to thank  me, click on "Feedback".</p>
+                        <h3>Usage</h3>
+                        <p>JSON Generator has a convenient syntax. You can specify JavaScript object for template that you see in the left box. It will be cloned in infinite depth. Fields can have any name and value, but it must be valid JavaScript. Values, which are strings, may contain one or more template tags. When you click "Generate" the data source object to be copied several times and the place of tags will be  inserted random values.</p>
+                        <p>You can copy the generated JSON to clipboard by clicking "Copy to clipboard". Also you can download generated file by clicking "Download" button. Generated JSON size appears at the top right of the field with the generated data.</p>
+                        <p>You can choose indentation for the generated JSON from the drop-down list. It can has values of "Compact", 2, 3 and 4.</p>
+                        <p>JSON Generator remembers your last template in localStorage. If you want to reset it, click "Reset" button to reset template and UI.</p>
+                    </article>
+                </div>
+            </aside>
+        </div>
+        <footer>
+            <span class="creator">
+                Distributed by <a href="https://kliknetezde.cz" target="_blank">Libor Svoboda</a>
+            </span>
+            <ul class="social-buttons">
+
+
+            </ul>
+        </footer>
+        <script src="./js/require.js" data-main="./js/app"></script>
+      
+    </body>
+</html>
