@@ -1,7 +1,12 @@
 ﻿using Microsoft.Data.SqlClient;
 using MySql.Data.MySqlClient;
-using Opc.UaFx;
-using Opc.UaFx.Client;
+using Opc.Ua;
+using Opc.Ua.Client;
+using Opc.Ua.Configuration;
+
+
+//using Opc.UaFx;
+//using Opc.UaFx.Client;
 using System.Collections.Immutable;
 using System.Data;
 using System.Reflection.PortableExecutable;
@@ -39,10 +44,11 @@ namespace Recon.Services
 
 
 
-        private static void GetOPCData(MachineList machineName) {
+        private async static void GetOPCData(MachineList machineName) {
             DateTime startCycle = DateTime.Now;
             DateTime finishCycle = DateTime.Now;
             List<MachineVariableList> machineVariableList;
+            DataValueCollection readedNodes = new(); IList<ServiceResult> errors;
 
             if (bool.Parse(Program.Settings.SettingData.GetValueOrDefault("autoDetectCycleTime"))) { startCycle = DateTime.Now; }
 
@@ -50,18 +56,31 @@ namespace Recon.Services
                 machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == machineName.MachineName).ToList();
             }
 
-            OpcClient client = new(machineName.Connection);
+            var config = new ApplicationConfiguration()
+            {
+                ApplicationName = "MujOpcKlient",
+                ApplicationUri = Utils.Format("urn:{0}:MujOpcKlient", System.Net.Dns.GetHostName()),
+                ApplicationType = ApplicationType.Client,
+                ClientConfiguration = new ClientConfiguration { DefaultSessionTimeout = 60000 },
+                TransportQuotas = new TransportQuotas { OperationTimeout = 15000 }
+            };
+            //ApplicationInstance? application = new(config);
+
             try {
-                client.Connect();
-                List<OpcReadNode> nodeData = new List<OpcReadNode>();
+
+                List<NodeId> nodeData = new List<NodeId>();
                 machineVariableList.ForEach(variable => {
                     if (variable.VariableName == "COM_ALIVE" || variable.VariableName == "OPC_ALIVE") {
-                        nodeData.Add(new OpcReadNode($"ns=2;s=Machines_definitions.{variable.VariableName}"));
-                    } else { nodeData.Add(new OpcReadNode($"ns=2;s=Machine1.{variable.VariableName}")); }
+                        nodeData.Add(new NodeId($"Machines_definitions.{variable.VariableName}",2));
+                    } else { nodeData.Add(new NodeId($"Machine1.{variable.VariableName}", 2)); }
                 });
 
-                var result = client.ReadNodes(nodeData.ToArray());
-                client.Disconnect();
+                EndpointDescription endpointDescription = new(machineName.Connection) { SecurityMode = MessageSecurityMode.None };
+                ConfiguredEndpoint endpoint = new(null, endpointDescription, EndpointConfiguration.Create(config));
+                Session session = await Session.Create(config, endpoint, true, "Session", 60000, null, null);
+                if (session.Connected) { session.ReadValues(nodeData, out readedNodes, out errors); }
+                await session.CloseAsync();
+
 
                 //FILL PREVIOUS DATA
                 MachineData machineData = new();
@@ -75,7 +94,7 @@ namespace Recon.Services
                 machineData.TimeStamp = DateTime.Now;
                 int index = 0;
                 machineVariableList.ForEach(variable => {
-                    machineData.LastData.Add(variable.VariableName, result.ElementAt(index).Value);
+                    machineData.LastData.Add(variable.VariableName, readedNodes[index].Value);
                     index++;
                 });
 

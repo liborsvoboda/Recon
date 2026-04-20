@@ -11,3 +11,6 @@ Server=127.0.0.1\SQLEXPRESS;Database=ReconDB;User ID=recon;Password=recon;TrustS
 Server=127.0.0.1;Database=ReconDB;Uid=root;Pwd=Password;
 ````
 
+
+# Commercial OPC NUGET
+Opc.UaFx.Advanced
