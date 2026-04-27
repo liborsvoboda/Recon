@@ -6,7 +6,7 @@ namespace Recon.ServerCoreStructure {
     /// Server Communication Extensions for Controlling Data Implmented FullUserTokenData For More
     /// Info Modify Auth Claims And Add Get Info Here
     /// </summary>
-    public class HtttpContextExtension : IHttpContextAccessor {
+    public class HttpContextExtension : IHttpContextAccessor {
         private static IHttpContextAccessor? _accessor = new HttpContextAccessor();
 
         HttpContext? IHttpContextAccessor.HttpContext { get => _accessor?.HttpContext; set => _accessor.HttpContext = value; }

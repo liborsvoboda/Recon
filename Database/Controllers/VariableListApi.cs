@@ -47,7 +47,7 @@ namespace EasyITCenter.Controllers {
         [Consumes("application/json")]
         public async Task<string> InsertVariableList([FromBody] VariableList record) {
             try {
-                if (HtttpContextExtension.IsAdmin()) {
+                if (HttpContextExtension.IsAdmin()) {
                     var data = new ReconContext().VariableLists.Add(record);
                     int result = await data.Context.SaveChangesAsync();
                     if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });
@@ -61,7 +61,7 @@ namespace EasyITCenter.Controllers {
         [Consumes("application/json")]
         public async Task<string> UpdateVariableList([FromBody] VariableList record) {
             try {
-                if (HtttpContextExtension.IsAdmin()) {
+                if (HttpContextExtension.IsAdmin()) {
                     var data = new ReconContext().VariableLists.Update(record);
                     int result = await data.Context.SaveChangesAsync();
                     if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });
@@ -75,7 +75,7 @@ namespace EasyITCenter.Controllers {
         [Consumes("application/json")]
         public async Task<string> DeleteVariableList(string id) {
             try {
-                if (HtttpContextExtension.IsAdmin()) {
+                if (HttpContextExtension.IsAdmin()) {
                     if (!int.TryParse(id, out int Ids)) return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = "Id is not set" });
 
                     VariableList record = new ReconContext().VariableLists.Where(a => a.Id == int.Parse(id)).First();

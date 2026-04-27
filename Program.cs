@@ -25,7 +25,7 @@ public partial class Program
         });
 
         builder.Services.AddEndpointsApiExplorer().AddControllersWithViews();
-        builder.Services.AddSingleton<IHttpContextAccessor, HtttpContextExtension>();
+        builder.Services.AddSingleton<IHttpContextAccessor, HttpContextExtension>();
         builder.Services.AddWindowsService(cfg => { cfg.ServiceName = "Recon"; });
         builder.Services.AddAuthentication(x => {
             x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

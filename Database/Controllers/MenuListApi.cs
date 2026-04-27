@@ -14,7 +14,7 @@ namespace EasyITCenter.Controllers {
             using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
                 IsolationLevel = IsolationLevel.ReadUncommitted //with NO LOCK
             })) {
-                data = new ReconContext().MenuLists.Where(a => a.AllowedUserRoles.Contains($"{HtttpContextExtension.GetUserRole()},"))
+                data = new ReconContext().MenuLists.Where(a => a.AllowedUserRoles.Contains($"{HttpContextExtension.GetUserRole()},"))
                     .OrderBy(a=>a.Sequence).ToList();
             }
             return JsonSerializer.Serialize(data);
@@ -49,7 +49,7 @@ namespace EasyITCenter.Controllers {
         [Consumes("application/json")]
         public async Task<string> InsertMenuList([FromBody] MenuList record) {
             try {
-                if (HtttpContextExtension.IsAdmin()) {
+                if (HttpContextExtension.IsAdmin()) {
                     var data = new ReconContext().MenuLists.Add(record);
                     int result = await data.Context.SaveChangesAsync();
                     if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });
@@ -63,7 +63,7 @@ namespace EasyITCenter.Controllers {
         [Consumes("application/json")]
         public async Task<string> UpdateMenuList([FromBody] MenuList record) {
             try { 
-                if (HtttpContextExtension.IsAdmin()) {
+                if (HttpContextExtension.IsAdmin()) {
                     var data = new ReconContext().MenuLists.Update(record);
                     int result = await data.Context.SaveChangesAsync();
                     if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });
@@ -77,7 +77,7 @@ namespace EasyITCenter.Controllers {
         [Consumes("application/json")]
         public async Task<string> DeleteMenuList(string id) {
             try {
-                if (HtttpContextExtension.IsAdmin()) {
+                if (HttpContextExtension.IsAdmin()) {
                     if (!int.TryParse(id, out int Ids)) return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = "Id is not set" });
 
                     MenuList record = new ReconContext().MenuLists.Where(a => a.Id == int.Parse(id)).First();
