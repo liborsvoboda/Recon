@@ -18,39 +18,10 @@ public partial class Program
 
         builder.Services.AddRazorPages().AddXmlSerializerFormatters().AddXmlDataContractSerializerFormatters(); ;
         builder.Services.AddSwaggerGen(c=> {
-            c.AddSecurityDefinition(
-                "Basic",
-                new OpenApiSecurityScheme
-                {
-                    In = ParameterLocation.Header,
-                    Description = "Basic Authorization header for getting Bearer Token.",
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "Basic",
-                }
-            );
-            c.AddSecurityRequirement(document =>
-            new OpenApiSecurityRequirement
-            {
-                [new OpenApiSecuritySchemeReference("Basic", document)] = []
-            });
-            c.AddSecurityDefinition(
-                "Bearer",
-                new OpenApiSecurityScheme
-                {
-                    In = ParameterLocation.Header,
-                    Description = "Please enter a valid token.",
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    BearerFormat = "JWT",
-                    Scheme = "Bearer",
-                }
-            );
-            c.AddSecurityRequirement(document =>
-            new OpenApiSecurityRequirement
-            {
-                [new OpenApiSecuritySchemeReference("Bearer", document)] = []
-            });
+            c.AddSecurityDefinition( "Basic", new OpenApiSecurityScheme { In = ParameterLocation.Header, Description = "Basic Authorization header for getting Bearer Token.", Name = "Authorization", Type = SecuritySchemeType.Http, Scheme = "Basic" } );
+            c.AddSecurityRequirement(document => new OpenApiSecurityRequirement { [new OpenApiSecuritySchemeReference("Basic", document)] = [] });
+            c.AddSecurityDefinition( "Bearer", new OpenApiSecurityScheme { In = ParameterLocation.Header, Description = "Please enter a valid token.", Name = "Authorization", Type = SecuritySchemeType.Http, BearerFormat = "JWT", Scheme = "Bearer" } );
+            c.AddSecurityRequirement(document => new OpenApiSecurityRequirement { [new OpenApiSecuritySchemeReference("Bearer", document)] = [] });
         });
 
         builder.Services.AddEndpointsApiExplorer().AddControllersWithViews();
