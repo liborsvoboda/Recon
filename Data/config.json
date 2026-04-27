@@ -1,5 +1,5 @@
 {
-  "connectionString": "Server=127.0.0.1\\SQLEXPRESS;Database=RECON;User ID=easyitcenter;Password=easyitcenter;TrustServerCertificate=True;MultipleActiveResultSets=True;",
+  "connectionString": "Server=172.20.9.205\\SQLEXPRESS;Database=RECON;User ID=easyitcenter;Password=easyitcenter;TrustServerCertificate=True;MultipleActiveResultSets=True;",
   "machinesLoadInterval": 10000,
   "dataTransferInterval": 60000,
   "autoDetectCycleTime": true
