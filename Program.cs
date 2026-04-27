@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Recon.Services;
 
@@ -10,11 +11,29 @@ public partial class Program
     {
 
         var builder = WebApplication.CreateBuilder(args);
-        builder.Services.AddDbContext<ReconContext>(opt => opt.UseSqlServer(Settings.SettingData.FirstOrDefault(a => a.Key == "connectionString").Value).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+        builder.Services.AddDbContext<ReconContext>(opt => {
+            opt.UseSqlServer(Settings.SettingData.FirstOrDefault(a => a.Key == "connectionString").Value, cfg => cfg.EnableRetryOnFailure(1)).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking); 
+        });
         builder.Services.AddHttpContextAccessor();
 
         builder.Services.AddRazorPages().AddXmlSerializerFormatters().AddXmlDataContractSerializerFormatters(); ;
         builder.Services.AddSwaggerGen(c=> {
+            c.AddSecurityDefinition(
+                "Basic",
+                new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Basic Authorization header for getting Bearer Token.",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Basic",
+                }
+            );
+            c.AddSecurityRequirement(document =>
+            new OpenApiSecurityRequirement
+            {
+                [new OpenApiSecuritySchemeReference("Basic", document)] = []
+            });
             c.AddSecurityDefinition(
                 "Bearer",
                 new OpenApiSecurityScheme
@@ -35,7 +54,7 @@ public partial class Program
         });
 
         builder.Services.AddEndpointsApiExplorer().AddControllersWithViews();
-
+        builder.Services.AddSingleton<IHttpContextAccessor, HtttpContextExtension>();
         builder.Services.AddWindowsService(cfg => { cfg.ServiceName = "Recon"; });
         builder.Services.AddAuthentication(x => {
             x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
