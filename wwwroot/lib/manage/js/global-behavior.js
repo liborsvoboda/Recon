@@ -3,7 +3,20 @@ let pageLoader;
 
 
 Gs.Behaviors.PortalStartup = async function () {
-    if (Metro.storage.getItem("ApiToken", null) != null) { Cookies.set("ApiToken", Metro.storage.getItem("ApiToken", null).Token); }
+    if (Metro.storage.getItem("ApiToken", null) != null) {
+        Cookies.set("ApiToken", Metro.storage.getItem("ApiToken", null).Token);
+        $("#LoginName").html(Metro.storage.getItem("ApiToken", null).Username);
+        let html = `<button class="button mr-1">Profile</button>
+                    <button class="button ml-1" onclick=Gs.Apis.SignOut(); >Sign out</button>`;
+        $("#LoginReaction").html(html);
+
+    } else {
+        $("#LoginName").html("Login");
+        Gs.Functions.AddClass("LoginName", "ani-shuttle");
+        let html = `<button class="button mr-1" onclick=Gs.Objects.ShowLoginPage(); >Login</button>
+                    <button class="button ml-1" onclick=Gs.Objects.ShowRegistrationPage(); >Registration</button>`;
+        $("#LoginReaction").html(html);
+    }
 
     await Gs.Apis.RunServerGetApi("MenuList/GetMenuList", "MenuList","GenerateMenuList");
     await Gs.Apis.RunServerGetApi("ExportSettingList/GetExportSettingList", "ExportSettingList");

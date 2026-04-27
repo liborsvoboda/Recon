@@ -75,27 +75,19 @@
 
         <div class="app-bar-container">
             <a href="#" class="app-bar-item shadowed">
-                @{ if(@userName != null) { <span class="ml-2 app-bar-name">@userName</span>}
-                else { <span class="ml-2 app-bar-name">Login</span>}}
+                <span id="LoginName" class="ml-2 app-bar-name"></span>
             </a>
             <div class="user-block shadow-1" data-role="collapse" data-collapsed="true">
                 <div class="bg-darkCyan fg-white p-2 text-middle">
                     <img src="/images/logo.png" class="avatar">
-                    <div class="h4 mb-0">Logged: @userName</div>
+                    <div class="h4 mb-0"></div>
                 </div>
                 <div class="bg-white d-flex flex-justify-between flex-equal-items p-2">
                     <button class="button flat-button">News</button>
                     <button class="button flat-button">Notes</button>
                     <button class="button flat-button">Friends</button>
                 </div>
-                <div class="bg-white d-flex flex-justify-between flex-equal-items p-2 bg-light">
-                @{ if(@userName != null) {
-                    <button class="button mr-1">Profile</button>
-                    <button class="button ml-1" onclick=Gs.Apis.SignOut(); >Sign out</button>
-                } else {
-                    <button class="button mr-1" onclick=Gs.Objects.ShowLoginPage(); >Login</button>
-                    <button class="button ml-1" onclick=Gs.Objects.ShowRegistrationPage(); >Registration</button>
-                }}
+                <div id="LoginReaction" class="bg-white d-flex flex-justify-between flex-equal-items p-2 bg-light">
                 </div>
             </div>
         </div>

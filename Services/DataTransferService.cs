@@ -1,7 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
 using MySql.Data.MySqlClient;
-//using Opc.UaFx;
-//using Opc.UaFx.Client;
 using System.Collections.Immutable;
 using System.Data;
 
