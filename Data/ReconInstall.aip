@@ -43,6 +43,7 @@
     <ROW Directory="Data_Dir" Directory_Parent="APPDIR" DefaultDir="Data" DirectoryOptions="3"/>
     <ROW Directory="Database_Dir" Directory_Parent="Data_Dir" DefaultDir="Database" DirectoryOptions="3"/>
     <ROW Directory="DesktopFolder" Directory_Parent="TARGETDIR" DefaultDir="DESKTO~1|DesktopFolder" IsPseudoRoot="1"/>
+    <ROW Directory="Prererquisities_Dir" Directory_Parent="Data_Dir" DefaultDir="PRERER~1|Prererquisities" DirectoryOptions="3"/>
     <ROW Directory="SHORTCUTDIR" Directory_Parent="TARGETDIR" DefaultDir="SHORTC~1|SHORTCUTDIR" IsPseudoRoot="1"/>
     <ROW Directory="TARGETDIR" DefaultDir="SourceDir"/>
     <ROW Directory="_deps_1_Dir" Directory_Parent="html_3_Dir" DefaultDir="_deps" DirectoryOptions="3"/>
@@ -162,6 +163,7 @@
     <ROW Directory="csp_Dir" Directory_Parent="basiclanguages_Dir" DefaultDir="csp" DirectoryOptions="3"/>
     <ROW Directory="css_10_Dir" Directory_Parent="language_2_Dir" DefaultDir="css" DirectoryOptions="3"/>
     <ROW Directory="css_11_Dir" Directory_Parent="summernote_Dir" DefaultDir="css" DirectoryOptions="3"/>
+    <ROW Directory="css_12_Dir" Directory_Parent="jsonData_Dir" DefaultDir="css" DirectoryOptions="3"/>
     <ROW Directory="css_1_Dir" Directory_Parent="bootstrap_Dir" DefaultDir="css" DirectoryOptions="3"/>
     <ROW Directory="css_2_Dir" Directory_Parent="dist_Dir" DefaultDir="css" DirectoryOptions="3"/>
     <ROW Directory="css_3_Dir" Directory_Parent="manage_Dir" DefaultDir="css" DirectoryOptions="3"/>
@@ -277,7 +279,9 @@
     <ROW Directory="js_3_Dir" Directory_Parent="manage_Dir" DefaultDir="js" DirectoryOptions="3"/>
     <ROW Directory="js_4_Dir" Directory_Parent="monaco_Dir" DefaultDir="js" DirectoryOptions="3"/>
     <ROW Directory="js_5_Dir" Directory_Parent="summernote_Dir" DefaultDir="js" DirectoryOptions="3"/>
+    <ROW Directory="js_6_Dir" Directory_Parent="jsonData_Dir" DefaultDir="js" DirectoryOptions="3"/>
     <ROW Directory="js_Dir" Directory_Parent="wwwroot_Dir" DefaultDir="js" DirectoryOptions="3"/>
+    <ROW Directory="jsonData_Dir" Directory_Parent="lib_2_Dir" DefaultDir="jsonData" DirectoryOptions="3"/>
     <ROW Directory="json_1_Dir" Directory_Parent="language_1_Dir" DefaultDir="json" DirectoryOptions="3"/>
     <ROW Directory="json_2_Dir" Directory_Parent="language_2_Dir" DefaultDir="json" DirectoryOptions="3"/>
     <ROW Directory="json_Dir" Directory_Parent="language_Dir" DefaultDir="json" DirectoryOptions="3"/>
@@ -746,6 +750,7 @@
     <ROW Component="Recon.dll" ComponentId="{E3D603E3-8D43-4EBF-A646-A9671E3B0780}" Directory_="APPDIR" Attributes="0" KeyPath="Recon.dll"/>
     <ROW Component="Recon.exe" ComponentId="{5756478F-02A1-4DEB-9A40-A5BB86F31ED4}" Directory_="APPDIR" Attributes="256" KeyPath="Recon.exe"/>
     <ROW Component="SHORTCUTDIR" ComponentId="{78EA1139-BF02-48EA-A32B-452B6DB3A17F}" Directory_="SHORTCUTDIR" Attributes="0"/>
+    <ROW Component="SQL2019SSEIExpr.exe" ComponentId="{4F27B5A3-6B39-4CC5-AB0A-BAF698F034A3}" Directory_="Prererquisities_Dir" Attributes="0" KeyPath="SQL2019SSEIExpr.exe"/>
     <ROW Component="Scalar.AspNetCore.dll" ComponentId="{A7DA0AAB-05D8-4F6D-81C4-08A275D96859}" Directory_="APPDIR" Attributes="0" KeyPath="Scalar.AspNetCore.dll"/>
     <ROW Component="Scrutor.dll" ComponentId="{7C2726FF-3995-4CD1-A806-639676AD2916}" Directory_="APPDIR" Attributes="0" KeyPath="Scrutor.dll"/>
     <ROW Component="Swashbuckle.AspNetCore.Annotations.dll" ComponentId="{BFC70A2E-935D-4D0E-BBCF-A77125799C3C}" Directory_="APPDIR" Attributes="0" KeyPath="Swashbuckle.AspNetCore.Annotations.dll"/>
@@ -827,10 +832,13 @@
     <ROW Component="apex.contribution.js" ComponentId="{478797AE-0E7F-4C3C-8FA1-B27A2F46346B}" Directory_="apex_Dir" Attributes="0" KeyPath="apex.contribution.js" Type="0"/>
     <ROW Component="apex.contribution.js_1" ComponentId="{8952B067-7962-4776-8159-803922321F02}" Directory_="apex_1_Dir" Attributes="0" KeyPath="apex.contribution.js_1" Type="0"/>
     <ROW Component="apex.js" ComponentId="{05314372-4778-4AFF-910F-5E7AA2A388CB}" Directory_="apex_2_Dir" Attributes="0" KeyPath="apex.js_2" Type="0"/>
+    <ROW Component="app.js" ComponentId="{4F5C71DF-5F12-48AA-87F6-BB827CC59A1A}" Directory_="js_6_Dir" Attributes="0" KeyPath="app.js" Type="0"/>
     <ROW Component="appsettings.Development.json" ComponentId="{6DF2DBC9-DCAF-43F2-A922-8358A35E6891}" Directory_="APPDIR" Attributes="0" KeyPath="appsettings.Development.json" Type="0"/>
     <ROW Component="aria.css" ComponentId="{238FDF75-E90E-4AA3-8228-29DF94AC5443}" Directory_="aria_Dir" Attributes="0" KeyPath="aria.css" Type="0"/>
     <ROW Component="arrays.js" ComponentId="{EB1F6BC7-8A24-4F12-9CA0-D99F1976F19C}" Directory_="utils_Dir" Attributes="0" KeyPath="arrays.js_1" Type="0"/>
     <ROW Component="arrays.js_1" ComponentId="{68DD181F-B9A2-4E17-B7CE-D349CFB25C0B}" Directory_="utils_1_Dir" Attributes="0" KeyPath="arrays.js_2" Type="0"/>
+    <ROW Component="aspnetcoreruntime10.0.7winx64.exe" ComponentId="{C87D4FA4-B254-4F67-9566-35BC939C4DDA}" Directory_="Prererquisities_Dir" Attributes="0" KeyPath="aspnetcoreruntime10.0.7winx64.exe"/>
+    <ROW Component="aspnetcoreruntime10.0.7winx86.exe" ComponentId="{CDA98964-972C-4B00-902C-2D3485D8D863}" Directory_="Prererquisities_Dir" Attributes="0" KeyPath="aspnetcoreruntime10.0.7winx86.exe"/>
     <ROW Component="azcli.contribution.js" ComponentId="{6CD82B05-DF32-4909-A953-E5CAF0687CA8}" Directory_="azcli_Dir" Attributes="0" KeyPath="azcli.contribution.js" Type="0"/>
     <ROW Component="azcli.contribution.js_1" ComponentId="{4C5504A8-851C-4FAD-B2BD-4CC6682DDB07}" Directory_="azcli_1_Dir" Attributes="0" KeyPath="azcli.contribution.js_1" Type="0"/>
     <ROW Component="azcli.js" ComponentId="{740C5078-4F34-4D00-96B0-FAFA0298F462}" Directory_="azcli_2_Dir" Attributes="0" KeyPath="azcli.js_2" Type="0"/>
@@ -928,6 +936,7 @@
     <ROW Component="dockerfile.contribution.js_1" ComponentId="{BB41BAD4-40E2-4D8E-8C8C-A59E156EDE2B}" Directory_="dockerfile_1_Dir" Attributes="0" KeyPath="dockerfile.contribution.js_1" Type="0"/>
     <ROW Component="dockerfile.js" ComponentId="{27A1E4CB-684B-49B5-B7BF-E2D8736B5170}" Directory_="dockerfile_2_Dir" Attributes="0" KeyPath="dockerfile.js_2" Type="0"/>
     <ROW Component="donate.jpg" ComponentId="{F25A4ABA-3831-47BA-A7A0-B43F6079B5B7}" Directory_="dbedit_Dir" Attributes="0" KeyPath="donate.jpg" Type="0"/>
+    <ROW Component="dotnethosting10.0.7win.exe" ComponentId="{C0219747-6271-4BBE-968F-BB48855ADFEB}" Directory_="Prererquisities_Dir" Attributes="0" KeyPath="dotnethosting10.0.7win.exe"/>
     <ROW Component="dynamicViewOverlay.js" ComponentId="{CACD20F9-22C5-4A06-B53C-CB57AD527AEC}" Directory_="view_Dir" Attributes="0" KeyPath="dynamicViewOverlay.js" Type="0"/>
     <ROW Component="edcore.main.js" ComponentId="{1412F05D-2544-438B-85FC-5C17DD66090A}" Directory_="editor_1_Dir" Attributes="0" KeyPath="edcore.main.js" Type="0"/>
     <ROW Component="edit.js" ComponentId="{4A46A121-BA3E-4703-A6AC-A56341D6FF26}" Directory_="impl_Dir" Attributes="0" KeyPath="edit.js" Type="0"/>
@@ -990,6 +999,7 @@
     <ROW Component="indentGuides.css" ComponentId="{2BD197FB-397C-42EB-98DA-3E2025AF9E43}" Directory_="indentGuides_Dir" Attributes="0" KeyPath="indentGuides.css" Type="0"/>
     <ROW Component="indentUtils.js" ComponentId="{AC8B6186-2B10-427E-A8AA-FEF488FD210E}" Directory_="indentation_Dir" Attributes="0" KeyPath="indentUtils.js" Type="0"/>
     <ROW Component="index.html" ComponentId="{DE061DB0-F49F-4957-8288-569937DCAD47}" Directory_="monaco_Dir" Attributes="0" KeyPath="index.html_3" Type="0"/>
+    <ROW Component="index.html_1" ComponentId="{74485008-8744-4D11-95F6-7607EB721F21}" Directory_="jsonData_Dir" Attributes="0" KeyPath="index.html_4" Type="0"/>
     <ROW Component="index.js" ComponentId="{07EE0F63-210A-4A9A-8BE3-0DF3DD68BD15}" Directory_="vscodeuri_Dir" Attributes="0" KeyPath="index.js" Type="0"/>
     <ROW Component="index.js_1" ComponentId="{4B45A703-B955-4713-B0BA-AE946F62CD75}" Directory_="vscodeuri_1_Dir" Attributes="0" KeyPath="index.js_1" Type="0"/>
     <ROW Component="ini.contribution.js" ComponentId="{B1AC0B90-2BFE-40F2-B9BE-4404C9E65441}" Directory_="ini_Dir" Attributes="0" KeyPath="ini.contribution.js" Type="0"/>
@@ -1186,6 +1196,7 @@
     <ROW Component="standaloneThemeService.js" ComponentId="{5D8D44A5-DC7E-40CB-AF9B-0F6990893EC6}" Directory_="common_3_Dir" Attributes="0" KeyPath="standaloneThemeService.js" Type="0"/>
     <ROW Component="storage.js" ComponentId="{0F07F18D-BE70-4C9A-85BC-300DB54809C1}" Directory_="common_26_Dir" Attributes="0" KeyPath="storage.js" Type="0"/>
     <ROW Component="style.css" ComponentId="{C7C1D640-6A34-4D22-B6E0-6B5B5F597A27}" Directory_="css_4_Dir" Attributes="0" KeyPath="style.css" Type="0"/>
+    <ROW Component="styles.css" ComponentId="{B8D6FD02-83A2-4320-AC96-83A87D0BE6C0}" Directory_="css_12_Dir" Attributes="0" KeyPath="styles.css" Type="0"/>
     <ROW Component="suggest.css" ComponentId="{1B589269-407C-45E0-9E5D-7DF948937867}" Directory_="media_5_Dir" Attributes="0" KeyPath="suggest.css" Type="0"/>
     <ROW Component="summernote.css" ComponentId="{871F8ED9-709A-44CF-A497-3EFE2B1E2191}" Directory_="css_11_Dir" Attributes="0" KeyPath="summernote.css" Type="0"/>
     <ROW Component="summernote.eot" ComponentId="{F29AF5A4-2F6E-484F-9332-5046B69E8174}" Directory_="font_Dir" Attributes="0" KeyPath="summernote.eot" Type="0"/>
@@ -1394,8 +1405,6 @@
     <ROW File="Recon.exe" Component_="Recon.exe" FileName="Recon.exe" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\Recon.exe" SelfReg="false" DigSign="true"/>
     <ROW File="Recon.pdb" Component_="Recon.exe" FileName="Recon.pdb" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\Recon.pdb" SelfReg="false"/>
     <ROW File="Recon.runtimeconfig.json" Component_="appsettings.Development.json" FileName="RECONR~1.JSO|Recon.runtimeconfig.json" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\Recon.runtimeconfig.json" SelfReg="false"/>
-    <ROW File="Recon.staticwebassets.endpoints.json" Component_="appsettings.Development.json" FileName="RECONS~1.JSO|Recon.staticwebassets.endpoints.json" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\Recon.staticwebassets.endpoints.json" SelfReg="false"/>
-    <ROW File="Recon.staticwebassets.runtime.json" Component_="appsettings.Development.json" FileName="RECONS~2.JSO|Recon.staticwebassets.runtime.json" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\Recon.staticwebassets.runtime.json" SelfReg="false"/>
     <ROW File="Microsoft.CodeAnalysis.CSharp.reso_9_urces.dll" Component_="Microsoft.CodeAnalysis.CSharp.reso_9_urces.dll" FileName="MICROS~1.DLL|Microsoft.CodeAnalysis.CSharp.resources.dll" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\ru\Microsoft.CodeAnalysis.CSharp.resources.dll" SelfReg="false"/>
     <ROW File="Microsoft.CodeAnalysis.CSharp.Work_9_spaces.resources.dll" Component_="Microsoft.CodeAnalysis.CSharp.Work_10_spaces.resources.dll" FileName="MICROS~2.DLL|Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\ru\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll" SelfReg="false"/>
     <ROW File="Microsoft.CodeAnalysis.resources.dll_9" Component_="Microsoft.CodeAnalysis.resources.dll_9" FileName="MICROS~3.DLL|Microsoft.CodeAnalysis.resources.dll" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\ru\Microsoft.CodeAnalysis.resources.dll" SelfReg="false"/>
@@ -2750,6 +2759,15 @@
     <ROW File="favicon.ico_1" Component_="config.json" FileName="favicon.ico" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\Data\favicon.ico" SelfReg="false"/>
     <ROW File="Help.md" Component_="config.json" FileName="Help.md" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\Data\Help.md" SelfReg="false"/>
     <ROW File="ReconInstall.aip" Component_="config.json" FileName="RECONI~1.AIP|ReconInstall.aip" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\Data\ReconInstall.aip" SelfReg="false"/>
+    <ROW File="aspnetcoreruntime10.0.7winx64.exe" Component_="aspnetcoreruntime10.0.7winx64.exe" FileName="ASPNET~1.EXE|aspnetcore-runtime-10.0.7-win-x64.exe" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\Data\Prererquisities\aspnetcore-runtime-10.0.7-win-x64.exe" SelfReg="false"/>
+    <ROW File="aspnetcoreruntime10.0.7winx86.exe" Component_="aspnetcoreruntime10.0.7winx86.exe" FileName="ASPNET~2.EXE|aspnetcore-runtime-10.0.7-win-x86.exe" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\Data\Prererquisities\aspnetcore-runtime-10.0.7-win-x86.exe" SelfReg="false"/>
+    <ROW File="dotnethosting10.0.7win.exe" Component_="dotnethosting10.0.7win.exe" FileName="DOTNET~1.EXE|dotnet-hosting-10.0.7-win.exe" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\Data\Prererquisities\dotnet-hosting-10.0.7-win.exe" SelfReg="false"/>
+    <ROW File="SQL2019SSEIExpr.exe" Component_="SQL2019SSEIExpr.exe" FileName="SQL201~1.EXE|SQL2019-SSEI-Expr.exe" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\Data\Prererquisities\SQL2019-SSEI-Expr.exe" SelfReg="false"/>
+    <ROW File="styles.css" Component_="styles.css" FileName="styles.css" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\wwwroot\lib\jsonData\css\styles.css" SelfReg="false"/>
+    <ROW File="index.html_4" Component_="index.html_1" FileName="INDEX~1.HTM|index.html" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\wwwroot\lib\jsonData\index.html" SelfReg="false"/>
+    <ROW File="app.js" Component_="app.js" FileName="app.js" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\wwwroot\lib\jsonData\js\app.js" SelfReg="false"/>
+    <ROW File="require.js_1" Component_="app.js" FileName="require.js" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\wwwroot\lib\jsonData\js\require.js" SelfReg="false"/>
+    <ROW File="Readme.md_4" Component_="index.html_1" FileName="Readme.md" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Debug\net10.0\wwwroot\lib\jsonData\Readme.md" SelfReg="false"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.BootstrOptComponent">
     <ROW BootstrOptKey="GlobalOptions" DownloadFolder="[AppDataFolder][|Manufacturer]\[|ProductName]\prerequisites" Options="2"/>
@@ -3599,6 +3617,13 @@
     <ROW Feature_="MICROSOFT.NET10.0." Component_="MICROSOFT.NET10.0."/>
     <ROW Feature_="MICROSOFTASP.NETCO" Component_="MICROSOFTASP.NETCO"/>
     <ROW Feature_="MICROSOFTASP.NETCO_1" Component_="MICROSOFTASP.NETCO_1"/>
+    <ROW Feature_="MainFeature" Component_="aspnetcoreruntime10.0.7winx64.exe"/>
+    <ROW Feature_="MainFeature" Component_="aspnetcoreruntime10.0.7winx86.exe"/>
+    <ROW Feature_="MainFeature" Component_="dotnethosting10.0.7win.exe"/>
+    <ROW Feature_="MainFeature" Component_="SQL2019SSEIExpr.exe"/>
+    <ROW Feature_="MainFeature" Component_="styles.css"/>
+    <ROW Feature_="MainFeature" Component_="index.html_1"/>
+    <ROW Feature_="MainFeature" Component_="app.js"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiIconsComponent">
     <ROW Name="favicon.exe" SourcePath="favicon.ico" Index="0"/>
@@ -3744,6 +3769,6 @@
     <ROW SearchKey="SystemFolderfile.dll_3" Prereq="MICROSOFTASP.NETCO_1" SearchType="0" SearchString="[SystemFolder]file.dll" VerMin="1.0" Order="1" Property="PreReqSearch_3"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.SynchronizedFolderComponent">
-    <ROW Directory_="APPDIR" SourcePath="..\bin\Debug\net10.0" Feature="MainFeature" ExcludePattern="*~|#*#|%*%|._|CVS|.cvsignore|SCCS|vssver.scc|mssccprj.scc|vssver2.scc|.svn|.DS_Store|\ReconInstall*" ExcludeFlags="6" FileAddOptions="4"/>
+    <ROW Directory_="APPDIR" SourcePath="..\bin\Debug\net10.0" Feature="MainFeature" ExcludePattern="*~|#*#|%*%|._|CVS|.cvsignore|SCCS|vssver.scc|mssccprj.scc|vssver2.scc|.svn|.DS_Store|\ReconInstall*|/Recon.staticwebassets.endpoints.json|/Recon.staticwebassets.runtime.json" ExcludeFlags="6" FileAddOptions="4"/>
   </COMPONENT>
 </DOCUMENT>
