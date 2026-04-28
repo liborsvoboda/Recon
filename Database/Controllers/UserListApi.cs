@@ -10,23 +10,14 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/UserList/GetUserList")]
         public async Task<string> GetUserList() {
             List<UserList> data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted //with NO LOCK
-            })) {
-                data = new ReconContext().UserLists.ToList();
-            }
-
+            data = new ReconContext().UserLists.ToList();
             return JsonSerializer.Serialize(data);
         }
 
         [HttpGet("/UserList/GetUserListByFilter/Filter/{filter}")]
         public async Task<string> GetUserListByFilter(string filter) {
             List<UserList> data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted //with NO LOCK
-            })) {
-                data = new ReconContext().UserLists.FromSqlRaw("SELECT * FROM UserList WHERE 1=1 AND " + filter.Replace("+", " ")).AsNoTracking().ToList();
-            }
+            data = new ReconContext().UserLists.FromSqlRaw("SELECT * FROM UserList WHERE 1=1 AND " + filter.Replace("+", " ")).AsNoTracking().ToList();
 
             return JsonSerializer.Serialize(data);
         }
@@ -34,11 +25,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/UserList/GetUserListKey/{id}")]
         public async Task<string> GetUserListKey(int id) {
             UserList data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted
-            })) {
-                data = new ReconContext().UserLists.Where(a => a.Id == id).First();
-            }
+            data = new ReconContext().UserLists.Where(a => a.Id == id).First();
 
             return JsonSerializer.Serialize(data);
         }

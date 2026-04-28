@@ -20,10 +20,7 @@ namespace Recon.Controllers {
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
             if (!optionsBuilder.IsConfigured) {
-                optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-                optionsBuilder.EnableSensitiveDataLogging(false); //everytime must be disabled other problem on release
-
-                optionsBuilder.UseSqlServer(Program.Settings.SettingData.FirstOrDefault(a=>a.Key == "connectionString").Value);
+                optionsBuilder.UseSqlite("Filename=Data\\Recon.db3");
             }
         }
     }
@@ -83,7 +80,7 @@ namespace Recon.Controllers {
                 //(table.AsDataView());
 
                 return results;
-            } catch (Exception Ex) { }
+            } catch (Exception ex) { }
             return null;
         }
 
@@ -101,7 +98,7 @@ namespace Recon.Controllers {
                 results = GlobalFunctions.GenericConvertTableToClassList<T>(table).ToList();
 
                 return results;
-            } catch (Exception Ex) { }
+            } catch (Exception ex) { }
             return new List<T>();
         }
 
@@ -161,7 +158,7 @@ namespace Recon.Controllers {
                 }
                 return value;
 
-            } catch (Exception Ex) { }
+            } catch (Exception ex) { }
             return new object();
         }
 
@@ -183,7 +180,7 @@ namespace Recon.Controllers {
                 }
                 return value;
 
-            } catch (Exception Ex) { }
+            } catch (Exception ex) { }
             return new object();
         }
 
@@ -210,7 +207,7 @@ namespace Recon.Controllers {
                     //cmd.Connection?.Close();
                     return value;
                 }
-            } catch (Exception Ex) { }
+            } catch (Exception ex) { }
             return new int();
         }
 
@@ -237,7 +234,7 @@ namespace Recon.Controllers {
                     //cmd.Connection?.Close();
                     return value;
                 }
-            } catch (Exception Ex) { }
+            } catch (Exception ex) { }
             return new int();
         }
 
@@ -267,7 +264,7 @@ namespace Recon.Controllers {
                     cmd.Connection?.Close();
                     return table;
                   }
-            } catch (Exception Ex) { }
+            } catch (Exception ex) { }
             return null;
         }
 
@@ -297,7 +294,7 @@ namespace Recon.Controllers {
                     cmd.Connection?.Close();
                     return table;
                 }
-            } catch (Exception Ex) { }
+            } catch (Exception ex) { }
             return null;
         }
 

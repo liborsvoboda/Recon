@@ -10,11 +10,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/VariableList/GetVariableList")]
         public async Task<string> GetVariableList() {
             List<VariableList> data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted //with NO LOCK
-            })) {
-                data = new ReconContext().VariableLists.ToList();
-            }
+            data = new ReconContext().VariableLists.ToList();
 
             return JsonSerializer.Serialize(data);
         }
@@ -22,11 +18,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/VariableList/GetVariableListByFilter/Filter/{filter}")]
         public async Task<string> GetVariableListByFilter(string filter) {
             List<VariableList> data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted //with NO LOCK
-            })) {
-                data = new ReconContext().VariableLists.FromSqlRaw("SELECT * FROM VariableList WHERE 1=1 AND " + filter.Replace("+", " ")).AsNoTracking().ToList();
-            }
+            data = new ReconContext().VariableLists.FromSqlRaw("SELECT * FROM VariableList WHERE 1=1 AND " + filter.Replace("+", " ")).AsNoTracking().ToList();
 
             return JsonSerializer.Serialize(data);
         }
@@ -34,11 +26,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/VariableList/GetVariableListKey/{id}")]
         public async Task<string> GetVariableListKey(int id) {
             VariableList data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted
-            })) {
-                data = new ReconContext().VariableLists.Where(a => a.Id == id).First();
-            }
+            data = new ReconContext().VariableLists.Where(a => a.Id == id).First();
 
             return JsonSerializer.Serialize(data);
         }

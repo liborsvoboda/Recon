@@ -11,12 +11,9 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/MenuList/GetMenuList")]
         public async Task<string> GetMenuList() {
             List<MenuList> data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted //with NO LOCK
-            })) {
-                data = new ReconContext().MenuLists.Where(a => a.AllowedUserRoles.Contains($"{HttpContextExtension.GetUserRole()},"))
+            data = new ReconContext().MenuLists.Where(a => a.AllowedUserRoles.Contains($"{HttpContextExtension.GetUserRole()},"))
                     .OrderBy(a=>a.Sequence).ToList();
-            }
+            
             return JsonSerializer.Serialize(data);
         }
 
@@ -24,11 +21,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/MenuList/GetMenuListByFilter/Filter/{filter}")]
         public async Task<string> GetMenuListByFilter(string filter) {
             List<MenuList> data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted //with NO LOCK
-            })) {
-                data = new ReconContext().MenuLists.FromSqlRaw("SELECT * FROM MenuList WHERE 1=1 AND " + filter.Replace("+", " ")).AsNoTracking().ToList();
-            }
+            data = new ReconContext().MenuLists.FromSqlRaw("SELECT * FROM MenuList WHERE 1=1 AND " + filter.Replace("+", " ")).AsNoTracking().ToList();
 
             return JsonSerializer.Serialize(data);
         }
@@ -36,11 +29,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/MenuList/GetMenuListKey/{id}")]
         public async Task<string> GetMenuListKey(int id) {
             MenuList data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted
-            })) {
-                data = new ReconContext().MenuLists.Where(a => a.Id == id).First();
-            }
+            data = new ReconContext().MenuLists.Where(a => a.Id == id).First();
 
             return JsonSerializer.Serialize(data);
         }

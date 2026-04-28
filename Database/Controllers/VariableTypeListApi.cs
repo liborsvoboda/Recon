@@ -10,11 +10,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/VariableTypeList/GetVariableTypeList")]
         public async Task<string> GetVariableTypeList() {
             List<VariableTypeList> data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted //with NO LOCK
-            })) {
-                data = new ReconContext().VariableTypeLists.ToList();
-            }
+            data = new ReconContext().VariableTypeLists.ToList();
 
             return JsonSerializer.Serialize(data);
         }
@@ -22,11 +18,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/VariableTypeList/GetVariableTypeListByFilter/Filter/{filter}")]
         public async Task<string> GetVariableTypeListByFilter(string filter) {
             List<VariableTypeList> data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted //with NO LOCK
-            })) {
-                data = new ReconContext().VariableTypeLists.FromSqlRaw("SELECT * FROM VariableTypeList WHERE 1=1 AND " + filter.Replace("+", " ")).AsNoTracking().ToList();
-            }
+            data = new ReconContext().VariableTypeLists.FromSqlRaw("SELECT * FROM VariableTypeList WHERE 1=1 AND " + filter.Replace("+", " ")).AsNoTracking().ToList();
 
             return JsonSerializer.Serialize(data);
         }
@@ -34,11 +26,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/VariableTypeList/GetVariableTypeListKey/{id}")]
         public async Task<string> GetVariableTypeListKey(int id) {
             VariableTypeList data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted
-            })) {
-                data = new ReconContext().VariableTypeLists.Where(a => a.Id == id).First();
-            }
+            data = new ReconContext().VariableTypeLists.Where(a => a.Id == id).First();
 
             return JsonSerializer.Serialize(data);
         }

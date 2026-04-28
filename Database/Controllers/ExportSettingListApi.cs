@@ -10,11 +10,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/ExportSettingList/GetExportSettingList")]
         public async Task<string> GetExportSettingList() {
             List<ExportSettingList> data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted //with NO LOCK
-            })) {
-                data = new ReconContext().ExportSettingLists.ToList();
-            }
+            data = new ReconContext().ExportSettingLists.ToList();
 
             return JsonSerializer.Serialize(data);
         }
@@ -22,23 +18,14 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/ExportSettingList/GetExportSettingListByFilter/Filter/{filter}")]
         public async Task<string> GetExportSettingListByFilter(string filter) {
             List<ExportSettingList> data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted //with NO LOCK
-            })) {
-                data = new ReconContext().ExportSettingLists.FromSqlRaw("SELECT * FROM ExportSettingList WHERE 1=1 AND " + filter.Replace("+", " ")).AsNoTracking().ToList();
-            }
-
+            data = new ReconContext().ExportSettingLists.FromSqlRaw("SELECT * FROM ExportSettingList WHERE 1=1 AND " + filter.Replace("+", " ")).AsNoTracking().ToList();
             return JsonSerializer.Serialize(data);
         }
 
         [HttpGet("/ExportSettingList/GetExportSettingListKey/{id}")]
         public async Task<string> GetExportSettingListKey(int id) {
             ExportSettingList data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted
-            })) {
-                data = new ReconContext().ExportSettingLists.Where(a => a.Id == id).First();
-            }
+            data = new ReconContext().ExportSettingLists.Where(a => a.Id == id).First();
 
             return JsonSerializer.Serialize(data);
         }
@@ -53,7 +40,6 @@ namespace EasyITCenter.Controllers {
                 else return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = result, ErrorMessage = string.Empty });
 
             } catch (Exception ex) { return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = GlobalFunctions.GetUserApiErrMessage(ex) }); }
-            return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = DBResult.DeniedYouAreNotAdmin.ToString() });
         }
 
         [HttpPost("/ExportSettingList/UpdateExportSettingList")]
@@ -66,7 +52,6 @@ namespace EasyITCenter.Controllers {
                 else return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = result, ErrorMessage = string.Empty });
 
             } catch (Exception ex) { return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = GlobalFunctions.GetUserApiErrMessage(ex) }); }
-            return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = DBResult.DeniedYouAreNotAdmin.ToString() });
         }
 
         [HttpDelete("/ExportSettingList/DeleteExportSettingList/{id}")]
@@ -84,7 +69,6 @@ namespace EasyITCenter.Controllers {
                 else return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = result, ErrorMessage = string.Empty });
                 
             } catch (Exception ex) { return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = GlobalFunctions.GetUserApiErrMessage(ex) }); }
-            return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = DBResult.DeniedYouAreNotAdmin.ToString() });
         }
     }
 }

@@ -10,11 +10,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/MachineVariableList/GetMachineVariableList")]
         public async Task<string> GetMachineVariableList() {
             List<MachineVariableList> data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted //with NO LOCK
-            })) {
-                data = new ReconContext().MachineVariableLists.ToList();
-            }
+            data = new ReconContext().MachineVariableLists.ToList();
 
             return JsonSerializer.Serialize(data);
         }
@@ -22,11 +18,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/MachineVariableList/GetMachineVariableListByFilter/Filter/{filter}")]
         public async Task<string> GetMachineVariableListByFilter(string filter) {
             List<MachineVariableList> data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted //with NO LOCK
-            })) {
-                data = new ReconContext().MachineVariableLists.FromSqlRaw("SELECT * FROM MachineVariableList WHERE 1=1 AND " + filter.Replace("+", " ")).AsNoTracking().ToList();
-            }
+            data = new ReconContext().MachineVariableLists.FromSqlRaw("SELECT * FROM MachineVariableList WHERE 1=1 AND " + filter.Replace("+", " ")).AsNoTracking().ToList();
 
             return JsonSerializer.Serialize(data);
         }
@@ -34,11 +26,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/MachineVariableList/GetMachineVariableListKey/{id}")]
         public async Task<string> GetMachineVariableListKey(int id) {
             MachineVariableList data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted
-            })) {
-                data = new ReconContext().MachineVariableLists.Where(a => a.Id == id).First();
-            }
+            data = new ReconContext().MachineVariableLists.Where(a => a.Id == id).First();
 
             return JsonSerializer.Serialize(data);
         }
@@ -53,7 +41,6 @@ namespace EasyITCenter.Controllers {
                 else return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = result, ErrorMessage = string.Empty });
 
             } catch (Exception ex) { return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = GlobalFunctions.GetUserApiErrMessage(ex) }); }
-            return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = DBResult.DeniedYouAreNotAdmin.ToString() });
         }
 
         [HttpPost("/MachineVariableList/UpdateMachineVariableList")]
@@ -66,13 +53,13 @@ namespace EasyITCenter.Controllers {
                 else return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = result, ErrorMessage = string.Empty });
 
             } catch (Exception ex) { return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = GlobalFunctions.GetUserApiErrMessage(ex) }); }
-            return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = DBResult.DeniedYouAreNotAdmin.ToString() });
         }
 
         [HttpDelete("/MachineVariableList/DeleteMachineVariableList/{id}")]
         [Consumes("application/json")]
         public async Task<string> DeleteMachineVariableList(string id) {
-            try {
+            try
+            {
 
                 if (!int.TryParse(id, out int Ids)) return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = "Id is not set" });
 
@@ -82,9 +69,9 @@ namespace EasyITCenter.Controllers {
                 int result = await data.Context.SaveChangesAsync();
                 if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });
                 else return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = result, ErrorMessage = string.Empty });
-                
-            } catch (Exception ex) { return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = GlobalFunctions.GetUserApiErrMessage(ex) }); }
-            return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = DBResult.DeniedYouAreNotAdmin.ToString() });
+
+            }
+            catch (Exception ex) { return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = GlobalFunctions.GetUserApiErrMessage(ex) }); }
         }
     }
 }

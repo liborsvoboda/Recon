@@ -11,9 +11,7 @@ public partial class Program
     {
 
         var builder = WebApplication.CreateBuilder(args);
-        builder.Services.AddDbContext<ReconContext>(opt => {
-            opt.UseSqlServer(Settings.SettingData.FirstOrDefault(a => a.Key == "connectionString").Value, cfg => cfg.EnableRetryOnFailure(1)).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking); 
-        });
+        builder.Services.AddEntityFrameworkSqlite().AddDbContext<ReconContext>();
         builder.Services.AddHttpContextAccessor();
 
         builder.Services.AddRazorPages().AddXmlSerializerFormatters().AddXmlDataContractSerializerFormatters(); ;

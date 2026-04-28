@@ -41,17 +41,13 @@ namespace EasyITCenter.Controllers {
             ReconContext data = new ReconContext();
             try { //check username exist
                 int count;
-                using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted })) {
-                    count = new ReconContext().UserLists.Where(a => a.UserName == webRegistration.Username).Count();
-                }
+                count = new ReconContext().UserLists.Where(a => a.UserName == webRegistration.Username).Count();
                 if (count > 0) {
                     return JsonSerializer.Serialize(new ResultMessage() { Status = DBWebApiResponses.userNameExist.ToString(), ErrorMessage = String.Empty });
                 }
                 
                 UserList origUser = new();
-                using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted })) {
-                    origUser = new ReconContext().UserLists.Where(a => a.UserName == webRegistration.EmailAddress).FirstOrDefault();
-                }
+                origUser = new ReconContext().UserLists.Where(a => a.UserName == webRegistration.EmailAddress).FirstOrDefault();
                 if (origUser == null) {
                     origUser = new() { RoleName = "user", UserName = webRegistration.Username, Password = BCrypt.Net.BCrypt.HashPassword(webRegistration.Password), Name = webRegistration.FirstName, 
                         Surname = webRegistration.Surname, Email = webRegistration.EmailAddress };

@@ -10,11 +10,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/MachineList/GetMachineList")]
         public async Task<string> GetMachineList() {
             List<MachineList> data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted //with NO LOCK
-            })) {
-                data = new ReconContext().MachineLists.ToList();
-            }
+            data = new ReconContext().MachineLists.ToList();
 
             return JsonSerializer.Serialize(data);
         }
@@ -22,11 +18,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/MachineList/GetMachineListByFilter/Filter/{filter}")]
         public async Task<string> GetMachineListByFilter(string filter) {
             List<MachineList> data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted //with NO LOCK
-            })) {
-                data = new ReconContext().MachineLists.FromSqlRaw("SELECT * FROM MachineList WHERE 1=1 AND " + filter.Replace("+", " ")).AsNoTracking().ToList();
-            }
+            data = new ReconContext().MachineLists.FromSqlRaw("SELECT * FROM MachineList WHERE 1=1 AND " + filter.Replace("+", " ")).AsNoTracking().ToList();
 
             return JsonSerializer.Serialize(data);
         }
@@ -34,11 +26,7 @@ namespace EasyITCenter.Controllers {
         [HttpGet("/MachineList/GetMachineListKey/{id}")]
         public async Task<string> GetMachineListKey(int id) {
             MachineList data;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {
-                IsolationLevel = IsolationLevel.ReadUncommitted
-            })) {
-                data = new ReconContext().MachineLists.Where(a => a.Id == id).First();
-            }
+            data = new ReconContext().MachineLists.Where(a => a.Id == id).First();
 
             return JsonSerializer.Serialize(data);
         }
@@ -53,7 +41,6 @@ namespace EasyITCenter.Controllers {
                 else return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = result, ErrorMessage = string.Empty });
 
             } catch (Exception ex) { return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = GlobalFunctions.GetUserApiErrMessage(ex) }); }
-            return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = DBResult.DeniedYouAreNotAdmin.ToString() });
         }
 
         [HttpPost("/MachineList/UpdateMachineList")]
@@ -66,7 +53,6 @@ namespace EasyITCenter.Controllers {
                 else return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = result, ErrorMessage = string.Empty });
 
             } catch (Exception ex) { return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = GlobalFunctions.GetUserApiErrMessage(ex) }); }
-            return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = DBResult.DeniedYouAreNotAdmin.ToString() });
         }
 
         [HttpDelete("/MachineList/DeleteMachineList/{id}")]
@@ -84,7 +70,6 @@ namespace EasyITCenter.Controllers {
                 else return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = result, ErrorMessage = string.Empty });
                 
             } catch (Exception ex) { return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = GlobalFunctions.GetUserApiErrMessage(ex) }); }
-            return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = DBResult.DeniedYouAreNotAdmin.ToString() });
         }
     }
 }
