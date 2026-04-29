@@ -34,6 +34,7 @@ namespace EasyITCenter.Controllers {
         [Consumes("application/json")]
         public async Task<string> InsertExportSettingList([FromBody] ExportSettingList record) {
             try {
+                record.TimeStamp = DateTime.Now;
                 var data = new ReconContext().ExportSettingLists.Add(record);
                 int result = await data.Context.SaveChangesAsync();
                 if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });
@@ -46,6 +47,7 @@ namespace EasyITCenter.Controllers {
         [Consumes("application/json")]
         public async Task<string> UpdateExportSettingList([FromBody] ExportSettingList record) {
             try {
+                record.TimeStamp = DateTime.Now;
                 var data = new ReconContext().ExportSettingLists.Update(record);
                 int result = await data.Context.SaveChangesAsync();
                 if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });

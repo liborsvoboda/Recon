@@ -39,6 +39,7 @@ namespace EasyITCenter.Controllers {
         public async Task<string> InsertMenuList([FromBody] MenuList record) {
             try {
                 if (HttpContextExtension.IsAdmin()) {
+                    record.TimeStamp = DateTime.Now;
                     var data = new ReconContext().MenuLists.Add(record);
                     int result = await data.Context.SaveChangesAsync();
                     if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });
@@ -53,6 +54,7 @@ namespace EasyITCenter.Controllers {
         public async Task<string> UpdateMenuList([FromBody] MenuList record) {
             try { 
                 if (HttpContextExtension.IsAdmin()) {
+                    record.TimeStamp = DateTime.Now;
                     var data = new ReconContext().MenuLists.Update(record);
                     int result = await data.Context.SaveChangesAsync();
                     if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });

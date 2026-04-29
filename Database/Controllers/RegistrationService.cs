@@ -50,7 +50,8 @@ namespace EasyITCenter.Controllers {
                 origUser = new ReconContext().UserLists.Where(a => a.UserName == webRegistration.EmailAddress).FirstOrDefault();
                 if (origUser == null) {
                     origUser = new() { RoleName = "user", UserName = webRegistration.Username, Password = BCrypt.Net.BCrypt.HashPassword(webRegistration.Password), Name = webRegistration.FirstName, 
-                        Surname = webRegistration.Surname, Email = webRegistration.EmailAddress };
+                        Surname = webRegistration.Surname, Email = webRegistration.EmailAddress, TimeStamp = DateTime.Now
+                    };
                     
                     DatabaseContextExtensions.RunTransaction(data, (trans) => {
                         data.UserLists.Add(origUser);

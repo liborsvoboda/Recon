@@ -35,6 +35,7 @@ namespace EasyITCenter.Controllers {
         [Consumes("application/json")]
         public async Task<string> InsertMachineList([FromBody] MachineList record) {
             try {
+                record.TimeStamp = DateTime.Now;
                 var data = new ReconContext().MachineLists.Add(record);
                 int result = await data.Context.SaveChangesAsync();
                 if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });
@@ -47,6 +48,7 @@ namespace EasyITCenter.Controllers {
         [Consumes("application/json")]
         public async Task<string> UpdateMachineList([FromBody] MachineList record) {
             try {
+                record.TimeStamp = DateTime.Now;
                 var data = new ReconContext().MachineLists.Update(record);
                 int result = await data.Context.SaveChangesAsync();
                 if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });

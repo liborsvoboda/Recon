@@ -36,6 +36,7 @@ namespace EasyITCenter.Controllers {
         public async Task<string> InsertVariableTypeList([FromBody] VariableTypeList record) {
             try {
                 if (HttpContextExtension.IsAdmin()) {
+                    record.TimeStamp = DateTime.Now;
                     var data = new ReconContext().VariableTypeLists.Add(record);
                     int result = await data.Context.SaveChangesAsync();
                     if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });
@@ -50,6 +51,7 @@ namespace EasyITCenter.Controllers {
         public async Task<string> UpdateVariableTypeList([FromBody] VariableTypeList record) {
             try {
                 if (HttpContextExtension.IsAdmin()) {
+                    record.TimeStamp = DateTime.Now;
                     var data = new ReconContext().VariableTypeLists.Update(record);
                     int result = await data.Context.SaveChangesAsync();
                     if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });
