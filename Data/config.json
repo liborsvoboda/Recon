@@ -1,5 +1,0 @@
-{
-  "machinesLoadInterval": 10000,
-  "dataTransferInterval": 60000,
-  "autoDetectCycleTime": true
-}
