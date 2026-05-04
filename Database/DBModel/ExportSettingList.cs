@@ -22,6 +22,9 @@ public partial class ExportSettingList
     [Unicode(false)]
     public string? TargetDbConnectionString { get; set; }
 
+    public int DbThreadCount { get; set; }
+
+    public int MachineCycleLoadInterval { get; set; }
     public int UserId { get; set; }
 
     public DateTime TimeStamp { get; set; }

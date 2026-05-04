@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Data;
+﻿using System.Data;
 using System.Data.Common;
 
 
@@ -20,7 +19,8 @@ namespace Recon.Controllers {
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
             if (!optionsBuilder.IsConfigured) {
-                optionsBuilder.UseSqlite("Filename=Data\\Recon.db3");
+                optionsBuilder.UseSqlite($"Filename={Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Data","Recon.db3")}");
+                //GlobalFunctions.WriteLogFile($"DatabasePath: {Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Data", "Recon.db3")}");
             }
         }
     }
@@ -66,7 +66,7 @@ namespace Recon.Controllers {
 
 
 
-        public static List<object>? EasyITCenterCollectionFromSql(this ReconContext ReconContext, Type type, string sql) {
+        public static List<object>? CollectionFromSql(this ReconContext ReconContext, Type type, string sql) {
             using var cmd = ReconContext.Database.GetDbConnection().CreateCommand();
             cmd.CommandText = sql;
             if (cmd.Connection?.State != ConnectionState.Open)

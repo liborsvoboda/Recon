@@ -15,19 +15,26 @@ namespace Recon.Services
 
         public MachineCycleService(ILogger<MachineCycleService> logger) { _logger = logger; }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
-            timer = new PeriodicTimer(TimeSpan.FromMilliseconds(double.Parse(Program.Settings.SettingData.GetValueOrDefault("machinesLoadInterval"))));
+            ExportSettingList? exportSettingList;
+            timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
             try {
                 while (await timer.WaitForNextTickAsync() && true) {
-                    
+
                     List<MachineList> machineList;
-                    using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted })) {
-                        machineList = new ReconContext().MachineLists.ToList(); }
+
+                    machineList = new ReconContext().MachineLists.ToList();
 
                     machineList.ForEach(machine => {
                         Thread thread = new Thread(() => GetOPCData(machine));
                         thread.IsBackground = true;
                         thread.Start();
                     });
+
+
+                    exportSettingList = new ReconContext().ExportSettingLists.Where(a => a.EnableDbExport == true).FirstOrDefault();
+                    if (exportSettingList != null) {
+                        timer = new PeriodicTimer(TimeSpan.FromSeconds(exportSettingList.MachineCycleLoadInterval));
+                    }
                 }
             }
             catch (Exception ex) { GlobalFunctions.WriteLogFile("Machine Loader Service Program Exception: " + ex.StackTrace); }
@@ -39,16 +46,11 @@ namespace Recon.Services
 
 
         private async static void GetOPCData(MachineList machineName) {
-            DateTime startCycle = DateTime.Now;
-            DateTime finishCycle = DateTime.Now;
             List<MachineVariableList> machineVariableList;
             DataValueCollection readedNodes = new(); IList<ServiceResult> errors;
 
-            if (bool.Parse(Program.Settings.SettingData.GetValueOrDefault("autoDetectCycleTime"))) { startCycle = DateTime.Now; }
-
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted })) {
-                machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == machineName.MachineName).ToList();
-            }
+            machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == machineName.MachineName).ToList();
+            
 
             var config = new ApplicationConfiguration()
             {
@@ -103,131 +105,66 @@ namespace Recon.Services
             }
             catch (Exception ex) { GlobalFunctions.WriteLogFile($"Machine {machineName.MachineName} not Connected " + GlobalFunctions.GetErrMsg(ex)); }
 
-            //WriteToDBStart
+            //Write To DbQuery
             ExportSettingList? exportSettingList;
-            using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted })) {
-                exportSettingList = new ReconContext().ExportSettingLists.Where(a => a.EnableDbExport == true).FirstOrDefault();
-            }
+            exportSettingList = new ReconContext().ExportSettingLists.Where(a => a.EnableDbExport == true).FirstOrDefault();
+            
 
             if (exportSettingList != null && exportSettingList.EnableDbExport) {
                 Program.MachinesData.Where(a => a.MachineName == machineName.MachineName).ToList().ForEach(x => {
                     List<MachineVariableList> machineVariableList;
-                    using (new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted })) {
-                        machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == x.MachineName).ToList();
-                    }
-
-                    bool saveToLocal = false;
+                    machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == x.MachineName).ToList();
+                    
                     foreach (var kvp in x.LastData) {
                         foreach (var kvk in x.PreviousData) {
                             if (kvk.Key == kvp.Key && kvk.Value.ToString() != kvp.Value.ToString()) {
                                 //DO INSERT or UPDATE
                                 var variable = machineVariableList.Where(a => a.VariableName == kvp.Key).FirstOrDefault();
+                                
                                 if (variable?.DbRequestType == "Insert") {
-
-                                    if (exportSettingList.DataBaseType == "MSSQL") {
-                                        try {
-                                            string insert = $"INSERT INTO {variable.InsertTableName} ([{variable.InsertMachineNameColumnName}],[{variable.InsertVariableNameColumnName}],[{variable.InsertVariableValueColumnName}],[{variable.InsertTimeStampColumnName}]) VALUES ('{x.MachineName}', '{kvp.Key}', '{kvp.Value}', '{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}');";
-                                            SqlConnection cnn = new(exportSettingList.TargetDbConnectionString);
-                                            cnn.Open();
-                                            if (cnn.State == ConnectionState.Open) {
-                                                DataSet dataTable = new();
-                                                SqlDataAdapter mDataAdapter = new(new SqlCommand(insert, cnn));
-                                                mDataAdapter.Fill(dataTable);
-                                                cnn.Close();
-                                                saveToLocal = false;
-                                            } else { saveToLocal = true; }
-
-                                            if (saveToLocal) {
-                                                InsertTable record = new() { MachineName = x.MachineName, VariableName = kvp.Key, VariableValue = kvp.Value.ToString(), TimeStamp = DateTime.Now };
-                                                var data = new ReconContext().InsertTables.Add(record);
-                                                data.Context.SaveChanges();
-                                            }
-                                        }
-                                        catch (Exception ex) {
-                                            GlobalFunctions.WriteLogFile("Machine Loader Service Insert MSSQL Program Exception: " + ex.StackTrace);
-                                            InsertTable record = new() { MachineName = x.MachineName, VariableName = kvp.Key, VariableValue = kvp.Value.ToString(), TimeStamp = DateTime.Now };
-                                            var data = new ReconContext().InsertTables.Add(record);
-                                            data.Context.SaveChanges();
-                                        }
-
-                                    }
-                                    else if (exportSettingList.DataBaseType == "MYSQL") {
-                                        try {
-                                            MySqlConnection cnn = new(exportSettingList.TargetDbConnectionString);
-                                            cnn.Open();
-                                            if (cnn.State == ConnectionState.Open) {
-                                                DataSet dataTable = new();
-                                                MySqlCommand comm = cnn.CreateCommand();
-                                                comm.CommandText = $"INSERT INTO {variable.InsertTableName}({variable.InsertMachineNameColumnName},{variable.InsertVariableNameColumnName},{variable.InsertVariableValueColumnName},{variable.InsertTimeStampColumnName}) VALUES('{x.MachineName}', '{kvp.Key}', '{kvp.Value}', '{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}')";
-                                                comm.ExecuteNonQuery();
-                                                cnn.Close();
-                                                saveToLocal = false;
-                                            } else { saveToLocal = true; }
-
-                                            if (saveToLocal) {
-                                                InsertTable record = new() { MachineName = x.MachineName, VariableName = kvp.Key, VariableValue = kvp.Value.ToString(), TimeStamp = DateTime.Now };
-                                                var data = new ReconContext().InsertTables.Add(record);
-                                                data.Context.SaveChanges();
-                                            }
-                                        }
-                                        catch (Exception ex) {
-                                            GlobalFunctions.WriteLogFile("Machine Loader Service Insert MYSQL Program Exception: " + ex.StackTrace);
-                                            InsertTable record = new() { MachineName = x.MachineName, VariableName = kvp.Key, VariableValue = kvp.Value.ToString(), TimeStamp = DateTime.Now };
-                                            var data = new ReconContext().InsertTables.Add(record);
-                                            data.Context.SaveChanges();
-                                        }
-                                    }
+                                    Record rec = new() {
+                                        Processed = false, MachineName = machineName.MachineName,
+                                        RecordType = RecordType.Insert, ValueName = kvp.Key, Value = kvp.Value.ToString(),
+                                        InsertMachineNameColumnName = variable.InsertMachineNameColumnName,
+                                        InsertTableName = variable.InsertTableName,
+                                        InsertVariableNameColumnName = variable.InsertVariableNameColumnName,
+                                        InsertVariableValueColumnName = variable.InsertVariableValueColumnName,
+                                        InsertTimeStampColumnName = variable.InsertTimeStampColumnName,
+                                        TimeStamp = x.TimeStamp
+                                        //UpdateTableName = variable.UpdateTableName,
+                                        //UpdateVariablePkColumnName = variable.UpdateVariablePkColumnName,
+                                        //UpdateVariablePkColumnValue = variable.UpdateVariablePkColumnValue,
+                                        //UpdateVariableValueColumnName = variable.UpdateVariableValueColumnName,
+                                        //UpdateTimeStampColumnName = variable.UpdateTimeStampColumnName
+                                    };
+                                    Program.ConnectionPool.TargetDbQuery.Add(rec);
+                                } else if(variable?.DbRequestType == "Update") {
+                                    Record rec = new() {
+                                        Processed = false,
+                                        MachineName = machineName.MachineName,
+                                        RecordType = RecordType.Update,
+                                        ValueName = kvp.Key,
+                                        Value = kvp.Value.ToString(),
+                                        //InsertMachineNameColumnName = variable.InsertMachineNameColumnName,
+                                        //InsertTableName = variable.InsertTableName,
+                                        //InsertVariableNameColumnName = variable.InsertVariableNameColumnName,
+                                        //InsertVariableValueColumnName = variable.InsertVariableValueColumnName,
+                                        //InsertTimeStampColumnName = variable.InsertTimeStampColumnName,
+                                        TimeStamp = x.TimeStamp,
+                                        UpdateTableName = variable.UpdateTableName,
+                                        UpdateVariablePkColumnName = variable.UpdateVariablePkColumnName,
+                                        UpdateVariablePkColumnValue = variable.UpdateVariablePkColumnValue,
+                                        UpdateVariableValueColumnName = variable.UpdateVariableValueColumnName,
+                                        UpdateTimeStampColumnName = variable.UpdateTimeStampColumnName
+                                    };
+                                    Program.ConnectionPool.TargetDbQuery.Add(rec);
                                 }
-                                else if (variable?.DbRequestType == "Update") {
-
-                                    if (exportSettingList.DataBaseType == "MSSQL") {
-                                        try {
-                                            string update = $"UPDATE {variable.UpdateTableName} SET [{variable.UpdateVariableValueColumnName}] = '{kvp.Value}', [{variable.UpdateTimeStampColumnName}] = '{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}' WHERE [{variable.UpdateVariablePkColumnName}] = '{variable.UpdateVariablePkColumnValue}';";
-                                            SqlConnection cnn = new(exportSettingList.TargetDbConnectionString);
-                                            cnn.Open();
-                                            if (cnn.State == ConnectionState.Open) {
-                                                DataSet dataTable = new();
-                                                SqlDataAdapter mDataAdapter = new(new SqlCommand(update, cnn));
-                                                mDataAdapter.Fill(dataTable);
-                                                cnn.Close();
-                                            }
-                                        }
-                                        catch (Exception ex) { GlobalFunctions.WriteLogFile("Machine Loader Service Update MSSQL Program Exception: " + ex.StackTrace); }
-
-                                    } else if (exportSettingList.DataBaseType == "MYSQL") {
-                                        try {
-                                            MySqlConnection cnn = new(exportSettingList.TargetDbConnectionString);
-                                            cnn.Open();
-                                            if (cnn.State == ConnectionState.Open) {
-                                                DataSet dataTable = new();
-                                                MySqlCommand comm = cnn.CreateCommand();
-                                                comm.CommandText = $"UPDATE {variable.UpdateTableName} SET {variable.UpdateVariableValueColumnName} = '{kvp.Value}', {variable.UpdateTimeStampColumnName} = '{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}' WHERE {variable.UpdateVariablePkColumnName} = '{variable.UpdateVariablePkColumnValue}'";
-                                                comm.ExecuteNonQuery();
-                                                cnn.Close();
-                                            }
-                                        }
-                                        catch (Exception ex) { GlobalFunctions.WriteLogFile("Machine Loader Service Update MYSQL Program Exception: " + ex.StackTrace); }
-
-                                    }
-                                }
-                                break;
                             }
                         }
                     }
                 });
             }
-            //WriteToDBEnd
-
-
-            if (bool.Parse(Program.Settings.SettingData.GetValueOrDefault("autoDetectCycleTime"))) {
-                finishCycle = DateTime.Now;
-
-                Program.Settings.SettingData = Program.Settings.SettingData.SetItem(machineName.MachineName, (finishCycle - startCycle).TotalMilliseconds.ToString());
-                try {
-                    //File.WriteAllText(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Data", "config.json"), JsonSerializer.Serialize(Program.Settings.SettingData));
-                } catch (Exception ex) { }
-            }
-
+            //WriteTo DbQuery End
         }
     }
 }

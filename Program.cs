@@ -4,8 +4,8 @@ using Recon.Services;
 
 public partial class Program
 {
-    public static Settings Settings = new() { SettingData = GlobalFunctions.LoadSetting() };
     public static List<MachineData> MachinesData = new();
+    public static ConnectionPool ConnectionPool = new();
 
     private static void Main(string[] args)
     {
@@ -44,7 +44,8 @@ public partial class Program
             };
         });
         builder.Services.AddHostedService<MachineCycleService>();
-        builder.Services.AddHostedService<DataTransferService>();
+        builder.Services.AddHostedService<ConnectionPoolService>();
+
         var app = builder.Build();
 
         if (!app.Environment.IsDevelopment())

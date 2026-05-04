@@ -1,6 +1,6 @@
 ﻿{
-  "DataSource": "Server=127.0.0.1\\SQLEXPRESS;Database=RECON;User ID=easyitcenter;Password=easyitcenter;TrustServerCertificate=True;command timeout=300;",
-  "Provider": "Microsoft.EntityFrameworkCore.SqlServer",
+  "DataSource": "Filename=Data\\Recon.db3",
+  "Provider": "Microsoft.EntityFrameworkCore.Sqlite",
   "ContextName": "ScaffoldContext",
   "ContextDirectory": "DATABASE/DBEngine",
   "OutputDirectory": "DATABASE/DBModel",
