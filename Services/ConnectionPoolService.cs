@@ -33,7 +33,13 @@ namespace Recon.Services
 
                         //Restart Processed
                         if (Program.ConnectionPool.TargetDbQuery.Count > 0) {
-                            Program.ConnectionPool.TargetDbQuery.ForEach(proc => { if ((DateTime.Now-proc.ProcessedStart).TotalSeconds > 60) { proc.Processed = false; } });
+                            Program.ConnectionPool.TargetDbQuery.ForEach(proc => {
+                                if (proc != null && (DateTime.Now - proc.ProcessedStart).TotalSeconds > 60) {
+                                    proc.Processed = false;
+                                } else if (proc == null) { 
+                                    Program.ConnectionPool.TargetDbQuery.Remove(proc); 
+                                }
+                            });
                         }
 
 
@@ -44,7 +50,7 @@ namespace Recon.Services
 
                             if (exportSettingList != null && exportSettingList.EnableDbExport && exportSettingList.DataBaseType == "MSSQL") {
                                 Program.ConnectionPool.TargetDbQuery.ForEach(rec => {
-                                    if (!rec.Processed) {
+                                    if (rec != null && !rec.Processed) {
                                         rec.Processed = true;
                                         thread = new Thread(() => SaveToTargetMsSQLDatabase(rec));
                                         thread.IsBackground = true;
@@ -54,7 +60,7 @@ namespace Recon.Services
                             }
                             else if (exportSettingList != null && exportSettingList.EnableDbExport && exportSettingList.DataBaseType == "MYSQL") {
                                 Program.ConnectionPool.TargetDbQuery.ForEach(rec => {
-                                    if (!rec.Processed) {
+                                    if (rec != null && !rec.Processed) {
                                         rec.Processed = true;
                                         thread = new Thread(() => SaveToTargetMySQLDatabase(rec));
                                         thread.IsBackground = true;
@@ -162,39 +168,45 @@ namespace Recon.Services
         /// </summary>
         private async static void SaveToTargetMsSQLDatabase(Record rec) {
             try {
-                bool proceed = false;
-                foreach (SqlConnection conn in Program.ConnectionPool.MsSqlConnection) { 
-                    if (conn.State == ConnectionState.Open) {
-                        try {
-                            proceed = true;
-                            string sql = string.Empty;
-                            if (rec.RecordType == RecordType.Insert) {
-                                sql = $"INSERT INTO {rec.InsertTableName} ([{rec.InsertMachineNameColumnName}],[{rec.InsertVariableNameColumnName}],[{rec.InsertVariableValueColumnName}],[{rec.InsertTimeStampColumnName}]) VALUES ('{rec.MachineName}', '{rec.ValueName}', '{rec.Value}', '{rec.TimeStamp.Value.ToString("yyyy-MM-dd H:mm:ss")}');";
+                bool proceed = false;bool foundedConn = false;
+                while (!foundedConn) {
+                    int closed = 0;
+                    foreach (SqlConnection conn in Program.ConnectionPool.MsSqlConnection) { 
+                        if (conn.State == ConnectionState.Open) {
+                            try {
+                                proceed = true; foundedConn = true;
+                                string sql = string.Empty;
+                                if (rec.RecordType == RecordType.Insert) {
+                                    sql = $"INSERT INTO {rec.InsertTableName} ([{rec.InsertMachineNameColumnName}],[{rec.InsertVariableNameColumnName}],[{rec.InsertVariableValueColumnName}],[{rec.InsertTimeStampColumnName}]) VALUES ('{rec.MachineName}', '{rec.ValueName}', '{rec.Value}', '{rec.TimeStamp.Value.ToString("yyyy-MM-dd H:mm:ss")}');";
+                                }
+                                else if (rec.RecordType == RecordType.Update) {
+                                    sql = $"UPDATE {rec.UpdateTableName} SET [{rec.UpdateVariableValueColumnName}] = '{rec.Value}', [{rec.UpdateTimeStampColumnName}] = '{rec.TimeStamp.Value.ToString("yyyy-MM-dd H:mm:ss")}' WHERE [{rec.UpdateVariablePkColumnName}] = '{rec.UpdateVariablePkColumnValue}';";
+                                }
+
+                                DataSet dataTable = new();
+                                SqlDataAdapter mDataAdapter = new(new SqlCommand(sql, conn));
+                                mDataAdapter.Fill(dataTable);
                             }
-                            else if (rec.RecordType == RecordType.Update) {
-                                sql = $"UPDATE {rec.UpdateTableName} SET [{rec.UpdateVariableValueColumnName}] = '{rec.Value}', [{rec.UpdateTimeStampColumnName}] = '{rec.TimeStamp.Value.ToString("yyyy-MM-dd H:mm:ss")}' WHERE [{rec.UpdateVariablePkColumnName}] = '{rec.UpdateVariablePkColumnValue}';";
+                            //Record Not Saved to Target DB save to Local
+                            catch (Exception ex) {
+                                if (rec.RecordType == RecordType.Insert) {
+                                    InsertTable record = new() { MachineName = rec.MachineName, VariableName = rec.ValueName, VariableValue = rec.Value, TimeStamp = rec.TimeStamp.Value };
+                                    new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
+                                    var data = new ReconContext().InsertTables.Add(record);
+                                    data.Context.SaveChanges();
+                                }
                             }
 
-                            DataSet dataTable = new();
-                            SqlDataAdapter mDataAdapter = new(new SqlCommand(sql, conn));
-                            mDataAdapter.Fill(dataTable);
+
+                            Program.ConnectionPool.TargetDbQuery.Remove(rec);
+                            break;
                         }
-                        //Record Not Saved to Target DB save to Local
-                        catch (Exception ex) {
-                            if (rec.RecordType == RecordType.Insert) {
-                                InsertTable record = new() { MachineName = rec.MachineName, VariableName = rec.ValueName, VariableValue = rec.Value, TimeStamp = rec.TimeStamp.Value };
-                                new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
-                                var data = new ReconContext().InsertTables.Add(record);
-                                data.Context.SaveChanges();
-                            }
+                        else if (conn.State == ConnectionState.Closed) { closed++; }
+                        if (closed == Program.ConnectionPool.MsSqlConnection.Count) { 
+                            foundedConn = true; 
                         }
-
-
-                        Program.ConnectionPool.TargetDbQuery.Remove(rec);
-                        break;
-                    }
-                };
-
+                    };
+                }
                 if (!proceed) { //Not openned any Connection
                     try {
                         if (rec.RecordType == RecordType.Insert) {
@@ -222,35 +234,42 @@ namespace Recon.Services
         /// <param name="rec"></param>
         private async static void SaveToTargetMySQLDatabase(Record rec) {
             try {
-                bool proceed = false;
-                foreach (MySqlConnection conn in Program.ConnectionPool.MySqlConnection) {
-                    if (conn.State == ConnectionState.Open) {
-                        proceed = true;
-                        try {
-                            if (rec.RecordType == RecordType.Insert) {
-                                MySqlCommand comm = conn.CreateCommand();
-                                comm.CommandText = $"INSERT INTO {rec.InsertTableName}({rec.InsertMachineNameColumnName},{rec.InsertVariableNameColumnName},{rec.InsertVariableValueColumnName},{rec.InsertTimeStampColumnName}) VALUES('{rec.MachineName}', '{rec.ValueName}', '{rec.Value}', '{rec.TimeStamp.Value.ToString("yyyy-MM-dd H:mm:ss")}')";
-                                comm.ExecuteNonQuery();
+                bool proceed = false; bool foundedConn = false;
+                while (!foundedConn) {
+                    int closed = 0;
+                    foreach (MySqlConnection conn in Program.ConnectionPool.MySqlConnection) {
+                        if (conn.State == ConnectionState.Open) {
+                            proceed = true; foundedConn = true;
+                            try {
+                                if (rec.RecordType == RecordType.Insert) {
+                                    MySqlCommand comm = conn.CreateCommand();
+                                    comm.CommandText = $"INSERT INTO {rec.InsertTableName}({rec.InsertMachineNameColumnName},{rec.InsertVariableNameColumnName},{rec.InsertVariableValueColumnName},{rec.InsertTimeStampColumnName}) VALUES('{rec.MachineName}', '{rec.ValueName}', '{rec.Value}', '{rec.TimeStamp.Value.ToString("yyyy-MM-dd H:mm:ss")}')";
+                                    comm.ExecuteNonQuery();
+                                }
+                                else if (rec.RecordType == RecordType.Update) {
+                                    MySqlCommand comm = conn.CreateCommand();
+                                    comm.CommandText = $"UPDATE {rec.UpdateTableName} SET {rec.UpdateVariableValueColumnName} = '{rec.Value}', {rec.UpdateTimeStampColumnName} = '{rec.TimeStamp.Value.ToString("yyyy-MM-dd H:mm:ss")}' WHERE {rec.UpdateVariablePkColumnName} = '{rec.UpdateVariablePkColumnValue}'";
+                                    comm.ExecuteNonQuery();
+                                }
                             }
-                            else if (rec.RecordType == RecordType.Update) {
-                                MySqlCommand comm = conn.CreateCommand();
-                                comm.CommandText = $"UPDATE {rec.UpdateTableName} SET {rec.UpdateVariableValueColumnName} = '{rec.Value}', {rec.UpdateTimeStampColumnName} = '{rec.TimeStamp.Value.ToString("yyyy-MM-dd H:mm:ss")}' WHERE {rec.UpdateVariablePkColumnName} = '{rec.UpdateVariablePkColumnValue}'";
-                                comm.ExecuteNonQuery();
+                            //Record Not Saved to Target DB save to Local
+                            catch (Exception ex) {
+                                if (rec.RecordType == RecordType.Insert) {
+                                    InsertTable record = new() { MachineName = rec.MachineName, VariableName = rec.ValueName, VariableValue = rec.Value, TimeStamp = rec.TimeStamp.Value };
+                                    new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
+                                    var data = new ReconContext().InsertTables.Add(record);
+                                    data.Context.SaveChanges();
+                                }
                             }
+                            Program.ConnectionPool.TargetDbQuery.Remove(rec);
+                            break;
                         }
-                        //Record Not Saved to Target DB save to Local
-                        catch (Exception ex) {
-                            if (rec.RecordType == RecordType.Insert) {
-                                InsertTable record = new() { MachineName = rec.MachineName, VariableName = rec.ValueName, VariableValue = rec.Value, TimeStamp = rec.TimeStamp.Value };
-                                new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;"); 
-                                var data = new ReconContext().InsertTables.Add(record);
-                                data.Context.SaveChanges();
-                            }
+                        else if (conn.State == ConnectionState.Closed) { closed++; }
+                        if (closed == Program.ConnectionPool.MySqlConnection.Count) { 
+                            foundedConn = true; 
                         }
-                        Program.ConnectionPool.TargetDbQuery.Remove(rec);
-                        break;
-                    }
-                };
+                    };
+                }
                 if (!proceed) { //Not openned any Connection
                     try {
                         if (rec.RecordType == RecordType.Insert) {

@@ -22,7 +22,7 @@ namespace Recon.Classes
 
     public class ConnectionPool {
         public List<int> InsertDBQuery { get; set; } = [];
-        public List<Record> TargetDbQuery { get; set; } = [];
+        public List<Record?> TargetDbQuery { get; set; } = [];
         public List<SqlConnection> MsSqlConnection { get; set; } = [];
         public List<MySqlConnection> MySqlConnection { get; set; } = [];
     }
