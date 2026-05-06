@@ -24,14 +24,24 @@ namespace Recon.Services
 
                 while (true) {
                     try {
+
+                        //Threads Management
+                        foreach(Thread threadquery in Program.ConnectionPool.ThreadsQuery) {
+                            if (threadquery.ThreadState == System.Threading.ThreadState.Stopped) { 
+                                Program.ConnectionPool.ThreadsQuery.Remove(threadquery); 
+                            }
+                        };
+
+
+
                         //Prepare For Transfer Insert Table To Target DB
-                        if (Program.ConnectionPool.TargetDbQuery.Count == 0 && Program.ConnectionPool.InsertDBQuery.Count == 0) {
+                        if (Program.ConnectionPool.TargetDbQuery.Count == 0 && Program.ConnectionPool.InsertDBQuery.Count == 0 && Program.ConnectionPool.ThreadsQuery.Count == 0) {
                             List<InsertTable> insertData = new List<InsertTable>(); insertData = new ReconContext().InsertTables.ToList();
                             insertData.ForEach(insertRec => { Program.ConnectionPool.InsertDBQuery.Add(insertRec.Id); });
                         } else if(Program.ConnectionPool.TargetDbQuery.Count > 0) { Program.ConnectionPool.InsertDBQuery = []; }
 
 
-                        //Restart Processed
+                        //Restart and Repair Processed
                         if (Program.ConnectionPool.TargetDbQuery.Count > 0) {
                             Program.ConnectionPool.TargetDbQuery.ForEach(proc => {
                                 if (proc != null && (DateTime.Now - proc.ProcessedStart).TotalSeconds > 60) {
@@ -55,6 +65,7 @@ namespace Recon.Services
                                         thread = new Thread(() => SaveToTargetMsSQLDatabase(rec));
                                         thread.IsBackground = true;
                                         thread.Start();
+                                        Program.ConnectionPool.ThreadsQuery.Add(thread);
                                     }
                                 });
                             }
@@ -65,6 +76,7 @@ namespace Recon.Services
                                         thread = new Thread(() => SaveToTargetMySQLDatabase(rec));
                                         thread.IsBackground = true;
                                         thread.Start();
+                                        Program.ConnectionPool.ThreadsQuery.Add(thread);
                                     }
                                 });
                             }
@@ -85,15 +97,16 @@ namespace Recon.Services
                                     thread = new Thread(() => SaveInsertLocalToMsSQLDatabase(rec));
                                     thread.IsBackground = true;
                                     thread.Start();
+                                    Program.ConnectionPool.ThreadsQuery.Add(thread);
                                     Program.ConnectionPool.InsertDBQuery.Remove(Program.ConnectionPool.InsertDBQuery[0]);
                                 } catch { }
                             }
                             else if (exportSettingList != null && exportSettingList.EnableDbExport && exportSettingList.DataBaseType == "MYSQL") {
-                                try
-                                {
+                                try {
                                     thread = new Thread(() => SaveInsertLocalToMySQLDatabase(rec));
                                     thread.IsBackground = true;
                                     thread.Start();
+                                    Program.ConnectionPool.ThreadsQuery.Add(thread);
                                     Program.ConnectionPool.InsertDBQuery.Remove(Program.ConnectionPool.InsertDBQuery[0]);
                                 } catch { }
                             }
@@ -296,29 +309,38 @@ namespace Recon.Services
         /// <param name="rec"></param>
         private async static void SaveInsertLocalToMsSQLDatabase(int rec) {
             try {
-                foreach (SqlConnection conn in Program.ConnectionPool.MsSqlConnection) {
-                    if (conn.State == ConnectionState.Open) {
-                        InsertTable? insertRec;
-                        insertRec = new ReconContext().InsertTables.Where(a => a.Id == rec).FirstOrDefault();
+                bool foundedConn = false;
+                while (!foundedConn) {
+                    int closed = 0;
+                    foreach (SqlConnection conn in Program.ConnectionPool.MsSqlConnection) {
+                        if (conn.State == ConnectionState.Open) {
+                            foundedConn = true;
+                            InsertTable? insertRec;
+                            insertRec = new ReconContext().InsertTables.Where(a => a.Id == rec).FirstOrDefault();
 
-                        if (insertRec != null) {
-                            MachineVariableList? machineVariableList;
-                            machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == insertRec.MachineName && a.VariableName == insertRec.VariableName).FirstOrDefault();
+                            if (insertRec != null) {
+                                MachineVariableList? machineVariableList;
+                                machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == insertRec.MachineName && a.VariableName == insertRec.VariableName).FirstOrDefault();
 
-                            if (machineVariableList != null) {
-                                string sql = $"INSERT INTO {machineVariableList.InsertTableName} ([{machineVariableList.InsertMachineNameColumnName}],[{machineVariableList.InsertVariableNameColumnName}],[{machineVariableList.InsertVariableValueColumnName}],[{machineVariableList.InsertTimeStampColumnName}]) VALUES ('{insertRec.MachineName}', '{insertRec.VariableName}', '{insertRec.VariableValue}', '{insertRec.TimeStamp.ToString("yyyy-MM-dd H:mm:ss")}');";
+                                if (machineVariableList != null) {
+                                    string sql = $"INSERT INTO {machineVariableList.InsertTableName} ([{machineVariableList.InsertMachineNameColumnName}],[{machineVariableList.InsertVariableNameColumnName}],[{machineVariableList.InsertVariableValueColumnName}],[{machineVariableList.InsertTimeStampColumnName}]) VALUES ('{insertRec.MachineName}', '{insertRec.VariableName}', '{insertRec.VariableValue}', '{insertRec.TimeStamp.ToString("yyyy-MM-dd H:mm:ss")}');";
 
-                                DataSet dataTable = new();
-                                SqlDataAdapter mDataAdapter = new(new SqlCommand(sql, conn));
-                                mDataAdapter.Fill(dataTable);
+                                    DataSet dataTable = new();
+                                    SqlDataAdapter mDataAdapter = new(new SqlCommand(sql, conn));
+                                    mDataAdapter.Fill(dataTable);
+                                }
+                                new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
+                                var deleteRec = new ReconContext().InsertTables.Remove(insertRec);
+                                deleteRec.Context.SaveChanges();
                             }
-                            new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
-                            var deleteRec = new ReconContext().InsertTables.Remove(insertRec);
-                            deleteRec.Context.SaveChanges();
+                            break;
                         }
-                        break;
-                    }
-                };
+                        else if (conn.State == ConnectionState.Closed) { closed++; }
+                        if (closed == Program.ConnectionPool.MsSqlConnection.Count) {
+                            foundedConn = true;
+                        }
+                    };
+                }
             }
             catch (Exception ex) {
                 GlobalFunctions.WriteLogFile("Save from Local DB To Target MsSQL Database Exception: " + ex.StackTrace);
@@ -332,27 +354,36 @@ namespace Recon.Services
         /// <param name="rec"></param>
         private async static void SaveInsertLocalToMySQLDatabase(int rec) {
             try {
-                foreach (MySqlConnection conn in Program.ConnectionPool.MySqlConnection) {
-                    if (conn.State == ConnectionState.Open) {
-                        InsertTable? insertRec;
-                        insertRec = new ReconContext().InsertTables.Where(a => a.Id == rec).FirstOrDefault();
+                bool foundedConn = false;
+                while (!foundedConn) {
+                    int closed = 0;
+                    foreach (MySqlConnection conn in Program.ConnectionPool.MySqlConnection) {
+                        if (conn.State == ConnectionState.Open) {
+                            foundedConn = true;
+                            InsertTable? insertRec;
+                            insertRec = new ReconContext().InsertTables.Where(a => a.Id == rec).FirstOrDefault();
 
-                        if (insertRec != null) {
-                            MachineVariableList? machineVariableList;
-                            machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == insertRec.MachineName && a.VariableName == insertRec.VariableName).FirstOrDefault();
+                            if (insertRec != null) {
+                                MachineVariableList? machineVariableList;
+                                machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == insertRec.MachineName && a.VariableName == insertRec.VariableName).FirstOrDefault();
 
-                            if (machineVariableList != null) {
-                                MySqlCommand comm = conn.CreateCommand();
-                                comm.CommandText = $"INSERT INTO {machineVariableList.InsertTableName}({machineVariableList.InsertMachineNameColumnName},{machineVariableList.InsertVariableNameColumnName},{machineVariableList.InsertVariableValueColumnName},{machineVariableList.InsertTimeStampColumnName}) VALUES('{insertRec.MachineName}', '{insertRec.VariableName}', '{insertRec.VariableValue}', '{insertRec.TimeStamp.ToString("yyyy-MM-dd H:mm:ss")}')";
-                                comm.ExecuteNonQuery();
+                                if (machineVariableList != null) {
+                                    MySqlCommand comm = conn.CreateCommand();
+                                    comm.CommandText = $"INSERT INTO {machineVariableList.InsertTableName}({machineVariableList.InsertMachineNameColumnName},{machineVariableList.InsertVariableNameColumnName},{machineVariableList.InsertVariableValueColumnName},{machineVariableList.InsertTimeStampColumnName}) VALUES('{insertRec.MachineName}', '{insertRec.VariableName}', '{insertRec.VariableValue}', '{insertRec.TimeStamp.ToString("yyyy-MM-dd H:mm:ss")}')";
+                                    comm.ExecuteNonQuery();
+                                }
+                                new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
+                                var deleteRec = new ReconContext().InsertTables.Remove(insertRec);
+                                deleteRec.Context.SaveChanges();
                             }
-                            new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
-                            var deleteRec = new ReconContext().InsertTables.Remove(insertRec);
-                            deleteRec.Context.SaveChanges();
+                            break;
                         }
-                        break;
-                    }
-                };
+                        else if (conn.State == ConnectionState.Closed) { closed++; }
+                        if (closed == Program.ConnectionPool.MySqlConnection.Count) {
+                            foundedConn = true;
+                        }
+                    };
+                }
             }
             catch (Exception ex)
             {

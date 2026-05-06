@@ -21,6 +21,7 @@ namespace Recon.Classes
 
 
     public class ConnectionPool {
+        public List<Thread> ThreadsQuery { get; set; } = [];
         public List<int> InsertDBQuery { get; set; } = [];
         public List<Record?> TargetDbQuery { get; set; } = [];
         public List<SqlConnection> MsSqlConnection { get; set; } = [];
