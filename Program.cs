@@ -6,6 +6,8 @@ public partial class Program
 {
     public static List<MachineData> MachinesData = new();
     public static ConnectionPool ConnectionPool = new();
+    public static MachineThreads MachineThreads = new();
+    public static List<MachineStatus?> MachineStatuses = [];
 
     private static void Main(string[] args)
     {
@@ -45,6 +47,7 @@ public partial class Program
         });
         builder.Services.AddHostedService<MachineCycleService>();
         builder.Services.AddHostedService<ConnectionPoolService>();
+        
 
         var app = builder.Build();
 
@@ -71,6 +74,7 @@ public partial class Program
         app.UseSwagger();
         app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1"); });
         app.UseStaticFiles();
+        
         app.Run();
     }
 }

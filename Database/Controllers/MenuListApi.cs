@@ -40,6 +40,7 @@ namespace EasyITCenter.Controllers {
             try {
                 if (HttpContextExtension.IsAdmin()) {
                     record.TimeStamp = DateTime.Now;
+                    new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
                     var data = new ReconContext().MenuLists.Add(record);
                     int result = await data.Context.SaveChangesAsync();
                     if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });
@@ -55,6 +56,7 @@ namespace EasyITCenter.Controllers {
             try { 
                 if (HttpContextExtension.IsAdmin()) {
                     record.TimeStamp = DateTime.Now;
+                    new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
                     var data = new ReconContext().MenuLists.Update(record);
                     int result = await data.Context.SaveChangesAsync();
                     if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });
@@ -72,7 +74,7 @@ namespace EasyITCenter.Controllers {
                     if (!int.TryParse(id, out int Ids)) return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = "Id is not set" });
 
                     MenuList record = new ReconContext().MenuLists.Where(a => a.Id == int.Parse(id)).First();
-
+                    new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
                     var data = new ReconContext().MenuLists.Remove(record);
                     int result = await data.Context.SaveChangesAsync();
                     if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });

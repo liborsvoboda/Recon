@@ -12,6 +12,7 @@ namespace Recon.Services
     {
         private readonly ILogger<MachineCycleService> _logger;
         private static PeriodicTimer timer;
+        
 
         public MachineCycleService(ILogger<MachineCycleService> logger) { _logger = logger; }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
@@ -21,13 +22,23 @@ namespace Recon.Services
                 while (await timer.WaitForNextTickAsync() && true) {
 
                     List<MachineList> machineList;
-
                     machineList = new ReconContext().MachineLists.ToList();
 
+                    //Threads Management
+                    foreach (MachineThread threadquery in Program.MachineThreads.MachineThread.ToList()) {
+                        if (threadquery.Thread?.ThreadState == System.Threading.ThreadState.Stopped) {
+                             Program.MachineThreads.MachineThread.Remove(threadquery);
+                        }
+                    };
+
+                    //Create OPC Threads if NOT exist
                     machineList.ForEach(machine => {
-                        Thread thread = new Thread(() => GetOPCData(machine));
-                        thread.IsBackground = true;
-                        thread.Start();
+                        if (Program.MachineThreads.MachineThread.Where(a => a.MachineName == machine.MachineName).Count() == 0) {
+                            Thread thread = new Thread(() => GetOPCData(machine));
+                            thread.IsBackground = true;
+                            thread.Start();
+                            Program.MachineThreads.MachineThread.Add(new MachineThread() { MachineName = machine.MachineName, Thread = thread });
+                        }
                     });
 
 
@@ -62,13 +73,17 @@ namespace Recon.Services
             };
             //ApplicationInstance? application = new(config);
 
-            try {
+            try
+            {
 
                 List<NodeId> nodeData = new List<NodeId>();
-                machineVariableList.ForEach(variable => {
-                    if (variable.VariableName == "COM_ALIVE" || variable.VariableName == "OPC_ALIVE") {
-                        nodeData.Add(new NodeId($"Machines_definitions.{variable.VariableName}",2));
-                    } else { nodeData.Add(new NodeId($"Machine1.{variable.VariableName}", 2)); }
+                machineVariableList.ForEach(variable =>
+                {
+                    if (variable.VariableName == "COM_ALIVE" || variable.VariableName == "OPC_ALIVE")
+                    {
+                        nodeData.Add(new NodeId($"Machines_definitions.{variable.VariableName}", 2));
+                    }
+                    else { nodeData.Add(new NodeId($"Machine1.{variable.VariableName}", 2)); }
                 });
 
                 EndpointDescription endpointDescription = new(machineName.Connection) { SecurityMode = MessageSecurityMode.None };
@@ -77,6 +92,15 @@ namespace Recon.Services
                 if (session.Connected) { session.ReadValues(nodeData, out readedNodes, out errors); }
                 await session.CloseAsync();
 
+                //Machine Status
+                Program.MachineStatuses.ToList().ForEach(status => { if (status == null) { Program.MachineStatuses.Remove(status); } });
+                List<MachineStatus> machineStatusCount = Program.MachineStatuses.Where(a => a.MachineName == machineName.MachineName).ToList();
+                if (machineStatusCount.Count == 0) {
+                    Program.MachineStatuses.Add(new MachineStatus() { MachineName = machineName.MachineName, IsRunning = true });
+                } else {
+                    machineStatusCount.ForEach(machineStat => { Program.MachineStatuses.Remove(machineStat); });
+                    Program.MachineStatuses.Add(new MachineStatus() { MachineName = machineName.MachineName, IsRunning = true });
+                }
 
                 //FILL PREVIOUS DATA
                 MachineData machineData = new();
@@ -103,7 +127,20 @@ namespace Recon.Services
                 }
 
             }
-            catch (Exception ex) { GlobalFunctions.WriteLogFile($"Machine {machineName.MachineName} not Connected " + GlobalFunctions.GetErrMsg(ex)); }
+            catch (Exception ex) {
+
+                //Machine Status
+                Program.MachineStatuses.ToList().ForEach(status => { if (status == null) { Program.MachineStatuses.Remove(status); } });
+                MachineStatus? machineStatusCount = Program.MachineStatuses.Where(a => a.MachineName == machineName.MachineName).FirstOrDefault();
+                if (machineStatusCount == null) {
+                    Program.MachineStatuses.Add(new MachineStatus() { MachineName = machineName.MachineName, IsRunning = false });
+                } else {
+                    Program.MachineStatuses.Remove(machineStatusCount);
+                    Program.MachineStatuses.Add(new MachineStatus() { MachineName = machineName.MachineName, IsRunning = false });
+                }
+
+                GlobalFunctions.WriteLogFile($"Machine {machineName.MachineName} not Connected " + GlobalFunctions.GetErrMsg(ex)); 
+            }
 
             //Write To DbQuery
             ExportSettingList? exportSettingList;

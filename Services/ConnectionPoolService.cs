@@ -5,6 +5,7 @@ using Opc.Ua;
 using Opc.Ua.Client;
 using System.Collections.Immutable;
 using System.Data;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace Recon.Services
@@ -26,7 +27,7 @@ namespace Recon.Services
                     try {
 
                         //Threads Management
-                        foreach(Thread threadquery in Program.ConnectionPool.ThreadsQuery) {
+                        foreach(Thread threadquery in Program.ConnectionPool.ThreadsQuery.ToList()) {
                             if (threadquery.ThreadState == System.Threading.ThreadState.Stopped) { 
                                 Program.ConnectionPool.ThreadsQuery.Remove(threadquery); 
                             }
@@ -35,10 +36,10 @@ namespace Recon.Services
 
 
                         //Prepare For Transfer Insert Table To Target DB
-                        if (Program.ConnectionPool.TargetDbQuery.Count == 0 && Program.ConnectionPool.InsertDBQuery.Count == 0 && Program.ConnectionPool.ThreadsQuery.Count == 0) {
-                            List<InsertTable> insertData = new List<InsertTable>(); insertData = new ReconContext().InsertTables.ToList();
-                            insertData.ForEach(insertRec => { Program.ConnectionPool.InsertDBQuery.Add(insertRec.Id); });
-                        } else if(Program.ConnectionPool.TargetDbQuery.Count > 0) { Program.ConnectionPool.InsertDBQuery = []; }
+                        if (Program.ConnectionPool.TargetDbQuery.Count == 0 && !Program.ConnectionPool.InsertDBQuery && Program.ConnectionPool.ThreadsQuery.Count == 0) {
+                            List<OpcUaInsertTable> insertData = new List<OpcUaInsertTable>(); insertData = new ReconContext().OpcUaInsertTables.ToList();
+                            if (insertData.Count > 0) { Program.ConnectionPool.InsertDBQuery = true; }
+                        } else if(Program.ConnectionPool.TargetDbQuery.Count > 0) { Program.ConnectionPool.InsertDBQuery = false; }
 
 
                         //Restart and Repair Processed
@@ -86,34 +87,34 @@ namespace Recon.Services
 
 
                         //Transfer Insert Table to Target DB
-                        else if (Program.ConnectionPool.TargetDbQuery.Count == 0 && Program.ConnectionPool.InsertDBQuery.Count > 0) {
-                            int rec = Program.ConnectionPool.InsertDBQuery[0];
+                        else if (Program.ConnectionPool.TargetDbQuery.Count == 0 && Program.ConnectionPool.InsertDBQuery) {
+                            
                             ExportSettingList? exportSettingList;
                             exportSettingList = new ReconContext().ExportSettingLists.Where(a => a.EnableDbExport == true).FirstOrDefault();
 
                             if (exportSettingList != null && exportSettingList.EnableDbExport && exportSettingList.DataBaseType == "MSSQL") {
                                 try
                                 {
-                                    thread = new Thread(() => SaveInsertLocalToMsSQLDatabase(rec));
+                                    thread = new Thread(SaveInsertLocalToMsSQLDatabase);
                                     thread.IsBackground = true;
                                     thread.Start();
                                     Program.ConnectionPool.ThreadsQuery.Add(thread);
-                                    Program.ConnectionPool.InsertDBQuery.Remove(Program.ConnectionPool.InsertDBQuery[0]);
+                                    Program.ConnectionPool.InsertDBQuery = false;
                                 } catch { }
                             }
                             else if (exportSettingList != null && exportSettingList.EnableDbExport && exportSettingList.DataBaseType == "MYSQL") {
                                 try {
-                                    thread = new Thread(() => SaveInsertLocalToMySQLDatabase(rec));
+                                    thread = new Thread(SaveInsertLocalToMySQLDatabase);
                                     thread.IsBackground = true;
                                     thread.Start();
                                     Program.ConnectionPool.ThreadsQuery.Add(thread);
-                                    Program.ConnectionPool.InsertDBQuery.Remove(Program.ConnectionPool.InsertDBQuery[0]);
+                                    Program.ConnectionPool.InsertDBQuery = false;
                                 } catch { }
                             }
                         }
 
                         //All Queries Empty Thread Sleep
-                        if(Program.ConnectionPool.TargetDbQuery.Count == 0 && Program.ConnectionPool.InsertDBQuery.Count == 0) { Thread.Sleep(5000); }
+                        if(Program.ConnectionPool.TargetDbQuery.Count == 0 && !Program.ConnectionPool.InsertDBQuery) { Thread.Sleep(5000); }
                     }
                     catch (Exception ex) { GlobalFunctions.WriteLogFile("Connection Pool Cycle Service Exception: " + ex.StackTrace); }
                 };
@@ -203,9 +204,9 @@ namespace Recon.Services
                             //Record Not Saved to Target DB save to Local
                             catch (Exception ex) {
                                 if (rec.RecordType == RecordType.Insert) {
-                                    InsertTable record = new() { MachineName = rec.MachineName, VariableName = rec.ValueName, VariableValue = rec.Value, TimeStamp = rec.TimeStamp.Value };
+                                    OpcUaInsertTable record = new() { MachineName = rec.MachineName, VariableName = rec.ValueName, VariableValue = rec.Value, TimeStamp = rec.TimeStamp.Value };
                                     new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
-                                    var data = new ReconContext().InsertTables.Add(record);
+                                    var data = new ReconContext().OpcUaInsertTables.Add(record);
                                     data.Context.SaveChanges();
                                 }
                             }
@@ -223,9 +224,9 @@ namespace Recon.Services
                 if (!proceed) { //Not openned any Connection
                     try {
                         if (rec.RecordType == RecordType.Insert) {
-                            InsertTable record = new() { MachineName = rec.MachineName, VariableName = rec.ValueName, VariableValue = rec.Value, TimeStamp = rec.TimeStamp.Value };
+                            OpcUaInsertTable record = new() { MachineName = rec.MachineName, VariableName = rec.ValueName, VariableValue = rec.Value, TimeStamp = rec.TimeStamp.Value };
                             new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
-                            var data = new ReconContext().InsertTables.Add(record);
+                            var data = new ReconContext().OpcUaInsertTables.Add(record);
                             data.Context.SaveChanges();
                             
                         }
@@ -268,9 +269,9 @@ namespace Recon.Services
                             //Record Not Saved to Target DB save to Local
                             catch (Exception ex) {
                                 if (rec.RecordType == RecordType.Insert) {
-                                    InsertTable record = new() { MachineName = rec.MachineName, VariableName = rec.ValueName, VariableValue = rec.Value, TimeStamp = rec.TimeStamp.Value };
+                                    OpcUaInsertTable record = new() { MachineName = rec.MachineName, VariableName = rec.ValueName, VariableValue = rec.Value, TimeStamp = rec.TimeStamp.Value };
                                     new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
-                                    var data = new ReconContext().InsertTables.Add(record);
+                                    var data = new ReconContext().OpcUaInsertTables.Add(record);
                                     data.Context.SaveChanges();
                                 }
                             }
@@ -286,9 +287,9 @@ namespace Recon.Services
                 if (!proceed) { //Not openned any Connection
                     try {
                         if (rec.RecordType == RecordType.Insert) {
-                            InsertTable record = new() { MachineName = rec.MachineName, VariableName = rec.ValueName, VariableValue = rec.Value, TimeStamp = rec.TimeStamp.Value };
+                            OpcUaInsertTable record = new() { MachineName = rec.MachineName, VariableName = rec.ValueName, VariableValue = rec.Value, TimeStamp = rec.TimeStamp.Value };
                             new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;"); 
-                            var data = new ReconContext().InsertTables.Add(record);
+                            var data = new ReconContext().OpcUaInsertTables.Add(record);
                             data.Context.SaveChanges();
                         }
                     }
@@ -307,7 +308,7 @@ namespace Recon.Services
         /// Insert Local Insert Table to Target MSSQL DB
         /// </summary>
         /// <param name="rec"></param>
-        private async static void SaveInsertLocalToMsSQLDatabase(int rec) {
+        private async static void SaveInsertLocalToMsSQLDatabase() {
             try {
                 bool foundedConn = false;
                 while (!foundedConn) {
@@ -315,24 +316,31 @@ namespace Recon.Services
                     foreach (SqlConnection conn in Program.ConnectionPool.MsSqlConnection) {
                         if (conn.State == ConnectionState.Open) {
                             foundedConn = true;
-                            InsertTable? insertRec;
-                            insertRec = new ReconContext().InsertTables.Where(a => a.Id == rec).FirstOrDefault();
 
-                            if (insertRec != null) {
-                                MachineVariableList? machineVariableList;
-                                machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == insertRec.MachineName && a.VariableName == insertRec.VariableName).FirstOrDefault();
+                            List<OpcUaInsertTable> insertRecs;
+                            insertRecs = new ReconContext().OpcUaInsertTables.ToList();
 
-                                if (machineVariableList != null) {
-                                    string sql = $"INSERT INTO {machineVariableList.InsertTableName} ([{machineVariableList.InsertMachineNameColumnName}],[{machineVariableList.InsertVariableNameColumnName}],[{machineVariableList.InsertVariableValueColumnName}],[{machineVariableList.InsertTimeStampColumnName}]) VALUES ('{insertRec.MachineName}', '{insertRec.VariableName}', '{insertRec.VariableValue}', '{insertRec.TimeStamp.ToString("yyyy-MM-dd H:mm:ss")}');";
+                            List<MachineVariableList> machineVariableList;
+                            machineVariableList = new ReconContext().MachineVariableLists.ToList();
 
-                                    DataSet dataTable = new();
-                                    SqlDataAdapter mDataAdapter = new(new SqlCommand(sql, conn));
-                                    mDataAdapter.Fill(dataTable);
+                            string sql = string.Empty;
+                            insertRecs.ForEach(insertRec => {
+                                MachineVariableList? machineVars = machineVariableList.Where(a => a.MachineName == insertRec.MachineName && a.VariableName == insertRec.VariableName).FirstOrDefault();
+
+                                if (machineVars != null) {
+                                    sql += $"INSERT INTO {machineVars.InsertTableName} ([{machineVars.InsertMachineNameColumnName}],[{machineVars.InsertVariableNameColumnName}],[{machineVars.InsertVariableValueColumnName}],[{machineVars.InsertTimeStampColumnName}]) VALUES ('{insertRec.MachineName}', '{insertRec.VariableName}', '{insertRec.VariableValue}', '{insertRec.TimeStamp.ToString("yyyy-MM-dd H:mm:ss")}');" + Environment.NewLine;
                                 }
-                                new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
-                                var deleteRec = new ReconContext().InsertTables.Remove(insertRec);
-                                deleteRec.Context.SaveChanges();
-                            }
+                            });
+
+                            DataSet dataTable = new();
+                            SqlDataAdapter mDataAdapter = new(new SqlCommand(sql, conn));
+                            mDataAdapter.Fill(dataTable);
+
+                            ReconContext data = new ReconContext(); 
+                            data.Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
+                            data.OpcUaInsertTables.RemoveRange(insertRecs);
+                            int result = data.SaveChanges();
+
                             break;
                         }
                         else if (conn.State == ConnectionState.Closed) { closed++; }
@@ -352,30 +360,41 @@ namespace Recon.Services
         /// Insert Local Insert Table to Target MYSQL DB
         /// </summary>
         /// <param name="rec"></param>
-        private async static void SaveInsertLocalToMySQLDatabase(int rec) {
+        private async static void SaveInsertLocalToMySQLDatabase() {
             try {
                 bool foundedConn = false;
                 while (!foundedConn) {
                     int closed = 0;
                     foreach (MySqlConnection conn in Program.ConnectionPool.MySqlConnection) {
-                        if (conn.State == ConnectionState.Open) {
+                        if (conn.State == ConnectionState.Open)
+                        {
                             foundedConn = true;
-                            InsertTable? insertRec;
-                            insertRec = new ReconContext().InsertTables.Where(a => a.Id == rec).FirstOrDefault();
 
-                            if (insertRec != null) {
-                                MachineVariableList? machineVariableList;
-                                machineVariableList = new ReconContext().MachineVariableLists.Where(a => a.MachineName == insertRec.MachineName && a.VariableName == insertRec.VariableName).FirstOrDefault();
+                            List<OpcUaInsertTable> insertRecs;
+                            insertRecs = new ReconContext().OpcUaInsertTables.ToList();
 
-                                if (machineVariableList != null) {
-                                    MySqlCommand comm = conn.CreateCommand();
-                                    comm.CommandText = $"INSERT INTO {machineVariableList.InsertTableName}({machineVariableList.InsertMachineNameColumnName},{machineVariableList.InsertVariableNameColumnName},{machineVariableList.InsertVariableValueColumnName},{machineVariableList.InsertTimeStampColumnName}) VALUES('{insertRec.MachineName}', '{insertRec.VariableName}', '{insertRec.VariableValue}', '{insertRec.TimeStamp.ToString("yyyy-MM-dd H:mm:ss")}')";
-                                    comm.ExecuteNonQuery();
+                            List<MachineVariableList> machineVariableList;
+                            machineVariableList = new ReconContext().MachineVariableLists.ToList();
+
+                            string sql = string.Empty;
+                            insertRecs.ForEach(insertRec => {
+                                MachineVariableList? machineVars = machineVariableList.Where(a => a.MachineName == insertRec.MachineName && a.VariableName == insertRec.VariableName).FirstOrDefault();
+
+                                if (machineVars != null)
+                                {
+                                    sql += $"INSERT INTO {machineVars.InsertTableName}({machineVars.InsertMachineNameColumnName},{machineVars.InsertVariableNameColumnName},{machineVars.InsertVariableValueColumnName},{machineVars.InsertTimeStampColumnName}) VALUES('{insertRec.MachineName}', '{insertRec.VariableName}', '{insertRec.VariableValue}', '{insertRec.TimeStamp.ToString("yyyy-MM-dd H:mm:ss")}')" + Environment.NewLine;
                                 }
-                                new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
-                                var deleteRec = new ReconContext().InsertTables.Remove(insertRec);
-                                deleteRec.Context.SaveChanges();
-                            }
+                            });
+
+                            MySqlCommand comm = conn.CreateCommand();
+                            comm.CommandText = sql;
+                            comm.ExecuteNonQuery();
+
+                            ReconContext data = new ReconContext();
+                            data.Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
+                            data.OpcUaInsertTables.RemoveRange(insertRecs);
+                            int result = data.SaveChanges();
+
                             break;
                         }
                         else if (conn.State == ConnectionState.Closed) { closed++; }

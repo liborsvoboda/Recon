@@ -38,7 +38,7 @@ namespace EasyITCenter.Controllers {
         [HttpPost("/RegistrationService/Registration")]
         [Consumes("application/json")]
         public async Task<string> Registration([FromBody] WebRegistration webRegistration) {
-            ReconContext data = new ReconContext();
+            
             try { //check username exist
                 int count;
                 count = new ReconContext().UserLists.Where(a => a.UserName == webRegistration.Username).Count();
@@ -52,12 +52,12 @@ namespace EasyITCenter.Controllers {
                     origUser = new() { RoleName = "user", UserName = webRegistration.Username, Password = BCrypt.Net.BCrypt.HashPassword(webRegistration.Password), Name = webRegistration.FirstName, 
                         Surname = webRegistration.Surname, Email = webRegistration.EmailAddress, TimeStamp = DateTime.Now
                     };
+
+                    new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
+                    ReconContext data = new ReconContext();
+                    data.UserLists.Add(origUser);
+                    data.SaveChanges();
                     
-                    DatabaseContextExtensions.RunTransaction(data, (trans) => {
-                        data.UserLists.Add(origUser);
-                        data.SaveChanges();
-                        return true;
-                    });
                 }
 
                  return JsonSerializer.Serialize(new ResultMessage() { InsertedId = origUser.Id, Status = DBWebApiResponses.success.ToString(), RecordCount = 1, ErrorMessage = String.Empty });

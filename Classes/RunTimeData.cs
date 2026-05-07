@@ -1,9 +1,24 @@
 ﻿using Microsoft.Data.SqlClient;
 using MySql.Data.MySqlClient;
-using System.Collections.Immutable;
 
 namespace Recon.Classes
 {
+
+    public class MachineStatus
+    {
+        public string MachineName { get; set; }
+        public bool IsRunning { get; set; }
+    }
+
+
+    public class MachineThread {
+        public Thread? Thread { get; set; }
+        public string? MachineName { get; set; }
+    }
+
+    public class MachineThreads {
+        public List<MachineThread> MachineThread { get; set; } = [];
+    }
 
     public class MachineData {
         public string MachineName { get; set; }
@@ -22,7 +37,7 @@ namespace Recon.Classes
 
     public class ConnectionPool {
         public List<Thread> ThreadsQuery { get; set; } = [];
-        public List<int> InsertDBQuery { get; set; } = [];
+        public bool InsertDBQuery { get; set; } = false;
         public List<Record?> TargetDbQuery { get; set; } = [];
         public List<SqlConnection> MsSqlConnection { get; set; } = [];
         public List<MySqlConnection> MySqlConnection { get; set; } = [];

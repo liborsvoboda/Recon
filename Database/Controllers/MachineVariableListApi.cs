@@ -36,6 +36,7 @@ namespace EasyITCenter.Controllers {
         public async Task<string> InsertMachineVariableList([FromBody] MachineVariableList record) {
             try {
                 record.TimeStamp = DateTime.Now;
+                new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
                 var data = new ReconContext().MachineVariableLists.Add(record);
                 int result = await data.Context.SaveChangesAsync();
                 if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });
@@ -49,6 +50,7 @@ namespace EasyITCenter.Controllers {
         public async Task<string> UpdateMachineVariableList([FromBody] MachineVariableList record) {
             try {
                 record.TimeStamp = DateTime.Now;
+                new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
                 var data = new ReconContext().MachineVariableLists.Update(record);
                 int result = await data.Context.SaveChangesAsync();
                 if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });
@@ -66,7 +68,7 @@ namespace EasyITCenter.Controllers {
                 if (!int.TryParse(id, out int Ids)) return JsonSerializer.Serialize(new ResultMessage() { Status = DBResult.error.ToString(), RecordCount = 0, ErrorMessage = "Id is not set" });
 
                 MachineVariableList record = new ReconContext().MachineVariableLists.Where(a => a.Id == int.Parse(id)).First();
-
+                new ReconContext().Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
                 var data = new ReconContext().MachineVariableLists.Remove(record);
                 int result = await data.Context.SaveChangesAsync();
                 if (result > 0) return JsonSerializer.Serialize(new ResultMessage() { InsertedId = record.Id, Status = DBResult.success.ToString(), RecordCount = result, ErrorMessage = string.Empty });

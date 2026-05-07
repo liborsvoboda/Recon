@@ -6,10 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Recon.DBModel;
 
-[Table("InsertTable")]
-[Index("MachineName", "VariableName", Name = "IX_InsertTable")]
-[Index("MachineName", Name = "IX_InsertTable_1")]
-public partial class InsertTable
+[Table("OpcUaInsertTable")]
+[Index("MachineName", "VariableName", Name = "IX_OpcUaInsertTable")]
+[Index("MachineName", Name = "IX_OpcUaInsertTable_1")]
+public partial class OpcUaInsertTable
 {
     [Key]
     public int Id { get; set; }
