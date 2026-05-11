@@ -130,14 +130,17 @@ namespace Recon.Services
             catch (Exception ex) {
 
                 //Machine Status
-                Program.MachineStatuses.ToList().ForEach(status => { if (status == null) { Program.MachineStatuses.Remove(status); } });
-                MachineStatus? machineStatusCount = Program.MachineStatuses.Where(a => a.MachineName == machineName.MachineName).FirstOrDefault();
-                if (machineStatusCount == null) {
-                    Program.MachineStatuses.Add(new MachineStatus() { MachineName = machineName.MachineName, IsRunning = false });
-                } else {
-                    Program.MachineStatuses.Remove(machineStatusCount);
-                    Program.MachineStatuses.Add(new MachineStatus() { MachineName = machineName.MachineName, IsRunning = false });
-                }
+                try {
+                    Program.MachineStatuses.ToList().ForEach(status => { if (status == null) { Program.MachineStatuses.Remove(status); } });
+                    MachineStatus? machineStatusCount = Program.MachineStatuses.Where(a => a.MachineName == machineName.MachineName).FirstOrDefault();
+                    if (machineStatusCount == null) {
+                        Program.MachineStatuses.Add(new MachineStatus() { MachineName = machineName.MachineName, IsRunning = false });
+                    } else {
+                        Program.MachineStatuses.Remove(machineStatusCount);
+                        Program.MachineStatuses.Add(new MachineStatus() { MachineName = machineName.MachineName, IsRunning = false });
+                    }
+                } catch { }
+                
 
                 GlobalFunctions.WriteLogFile($"Machine {machineName.MachineName} not Connected " + GlobalFunctions.GetErrMsg(ex)); 
             }
