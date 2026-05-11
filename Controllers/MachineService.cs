@@ -11,8 +11,7 @@ namespace Recon.Controllers {
         [AllowAnonymous]
         [HttpGet("/MachineService/MachineStatuses")]
         public async Task<string> GetFullData() {
-            return JsonSerializer.Serialize(Program.MachineStatuses, new JsonSerializerOptions()
-            {
+            return JsonSerializer.Serialize(Program.MachineStatuses, new JsonSerializerOptions() {
                 ReferenceHandler = ReferenceHandler.IgnoreCycles,
                 WriteIndented = true,
                 //DictionaryKeyPolicy = JsonNamingPolicy.CamelCase, 
@@ -24,16 +23,14 @@ namespace Recon.Controllers {
         [Authorize]
         [HttpGet("/MachineService/SetVariables/{machine}")]
         public async Task<IActionResult> SetVariables(string machine) {
-            try
-            {
+            try {
 
                 var existingVariables = new ReconContext().MachineVariableLists.Where(a => a.MachineName == machine).ToList();
                 var variables = new ReconContext().VariableLists.ToList();
 
                 variables.ForEach(async variable => {
                     if (existingVariables.Where(a => a.VariableName == variable.Name).Count() == 0) {
-                        MachineVariableList record = new()
-                        { 
+                        MachineVariableList record = new() { 
                             MachineName = machine, TimeStamp = DateTime.Now, DbRequestType = "Insert",VariableName= variable.Name,
                             InsertTableName = "OpcUaInsertTable", InsertMachineNameColumnName = "MachineName", InsertVariableNameColumnName = "VariableName",
                             InsertVariableValueColumnName = "VariableValue", InsertTimeStampColumnName = "TimeStamp",
